@@ -18,6 +18,7 @@ Everything lives on the [releases page](https://forgejo.fifthdread.com/Ramzal/gu
 2. Double-click it.
 3. Click **Install**, then **Finish**. No admin password. It installs just for your Windows account.
 4. A shortcut shows up on the desktop and in the Start menu, and the app opens.
+5. Let it find WoW: Forever. If it shrugs, browse to the folder that has `Wow.exe` and `_classic_beta_` in it.
 
 To remove it later: Start menu, GuildSync Companion, Uninstall. Or Settings, Apps.
 
@@ -38,6 +39,7 @@ paru -S guildsync-companion-git
 ```
 
 3. Open **GuildSync Companion** from the app menu.
+4. Let it find WoW: Forever. If it shrugs, browse to the `_classic_beta_` folder inside your Wine, Lutris, Steam, or Bottles prefix. That folder has `Wow.exe` in it.
 
 Updates come with everything else:
 
@@ -56,6 +58,7 @@ Apple silicon only. The disk image is named that way so you can see it before yo
 3. Drag **GuildSync Companion** onto **Applications**.
 4. Open **GuildSync Companion** from Applications. If macOS says it cannot be opened, right-click the app and choose **Open**.
 5. Eject the disk image. You do not need to keep it.
+6. Let it find WoW: Forever. On Apple silicon the game lives in a Whisky or CrossOver bottle. If the app shrugs, browse to the `_classic_beta_` folder in that bottle.
 
 To remove it later, drag **GuildSync Companion** out of Applications and into the Trash.
 
@@ -63,8 +66,7 @@ To remove it later, drag **GuildSync Companion** out of Applications and into th
 
 1. The app opens. Go to the [upload page](https://twilighttavern.co/upload), log in with Discord, and copy your upload token.
 2. Paste that token in. If what you copied starts with `ffk_`, that's a Guild Hall key. Go back to the upload page and grab the token instead.
-3. Let it find WoW: Forever. If it shrugs, browse to the folder that has `Wow.exe` and `_classic_beta_` in it. On Linux and Mac that folder is inside the Wine, Lutris, Steam, CrossOver, or Whisky bottle.
-4. It installs the addon. You're done.
+3. It installs the addon once it has found the game. You're done.
 
 Close the window whenever you want. It keeps running next to the clock and syncs when you log out. Left-click the icon if you need it again. The menu is Settings, Sync Now, Check for Updates, About, and Quit.
 
