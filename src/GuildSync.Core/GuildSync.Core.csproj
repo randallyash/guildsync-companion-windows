@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>GuildSync.Core</RootNamespace>
     <AssemblyName>GuildSync.Core</AssemblyName>
-    <Version>0.1.4</Version>
+    <Version>0.1.5</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>

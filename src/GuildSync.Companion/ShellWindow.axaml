@@ -168,8 +168,15 @@
 
               <!-- Characters -->
               <StackPanel Spacing="16" IsVisible="{Binding Page, Converter={StaticResource Eq}, ConverterParameter=characters}">
-                <TextBlock Text="CHARACTERS" Classes="kicker"/>
-                <TextBlock Text="Your characters" Classes="h1"/>
+                <Grid ColumnDefinitions="*,Auto">
+                  <StackPanel Spacing="8">
+                    <TextBlock Text="CHARACTERS" Classes="kicker"/>
+                    <TextBlock Text="Your characters" Classes="h1"/>
+                  </StackPanel>
+                  <Button Grid.Column="1" Classes="ghost" Content="Refresh" Command="{Binding RefreshCharactersCommand}"
+                          MinWidth="120" HorizontalContentAlignment="Center" VerticalAlignment="Bottom"
+                          IsEnabled="{Binding !CharactersBusy}"/>
+                </Grid>
                 <TextBlock Classes="muted" Text="{Binding CharactersStatus}" TextWrapping="Wrap"/>
                 <Grid ColumnDefinitions="*,70,64,64,88,78" Margin="4,0,4,0">
                   <TextBlock Text="Character" Classes="kicker"/>

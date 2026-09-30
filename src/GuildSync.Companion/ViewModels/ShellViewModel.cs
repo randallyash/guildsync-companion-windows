@@ -18,6 +18,8 @@ public partial class ShellViewModel : ObservableObject
     private List<RosterCharacter> _owned = [];
     private string _ownedStatus = "";
     private int? _previewMainId = 1560;
+    private int _characterLoad;
+    private DateTimeOffset? _appliedSyncUtc;
 
     public ShellViewModel(CompanionHost host, bool showOnLaunch)
     {
@@ -51,7 +53,7 @@ public partial class ShellViewModel : ObservableObject
         if (preview == "update")
         {
             UpdatePromptOpen = true;
-            UpdatePromptDetail = "Companion 0.1.5 is ready. GuildSync will close, install, and open again.";
+            UpdatePromptDetail = "Companion 0.1.6 is ready. GuildSync will close, install, and open again.";
         }
         if (preview == "characters")
             LoadCharacterPreview();
@@ -103,6 +105,7 @@ public partial class ShellViewModel : ObservableObject
     [ObservableProperty] private bool startWithWindows = true;
     [ObservableProperty] private string settingsMessage = "";
     [ObservableProperty] private string charactersStatus = "";
+    [ObservableProperty] private bool charactersBusy;
     [ObservableProperty] private bool updatePromptOpen;
     [ObservableProperty] private bool updatePromptBusy;
     [ObservableProperty] private string updatePromptDetail = "";
@@ -345,8 +348,11 @@ public partial class ShellViewModel : ObservableObject
 
         Page = "characters";
         Dialogs?.ShowWindow();
-        await LoadCharactersAsync().ConfigureAwait(true);
+        await LoadCharactersAsync(keepOnError: false).ConfigureAwait(true);
     }
+
+    [RelayCommand]
+    private Task RefreshCharactersAsync() => LoadCharactersAsync(keepOnError: _owned.Count > 0);
 
     [RelayCommand]
     private void ShowSettings()
@@ -659,6 +665,15 @@ public partial class ShellViewModel : ObservableObject
         Activity.Clear();
         foreach (var line in _host.ActivitySnapshot())
             Activity.Add(line);
+
+        // A sync just landed and this page is open. Pick up level, DKP, and last seen.
+        if (Page == "characters"
+            && !CharactersBusy
+            && _host.LastSyncUtc is { } synced
+            && synced != _appliedSyncUtc)
+        {
+            _ = LoadCharactersAsync(keepOnError: true);
+        }
     }
 
     private void PinCharacter(int id)
@@ -682,15 +697,19 @@ public partial class ShellViewModel : ObservableObject
         ShowOwned();
     }
 
-    private async Task LoadCharactersAsync()
+    private async Task LoadCharactersAsync(bool keepOnError)
     {
+        var gen = ++_characterLoad;
+        var seenSync = _host?.LastSyncUtc;
         if (_preview || _host is null)
         {
             LoadCharacterPreview();
+            _appliedSyncUtc = seenSync;
             return;
         }
 
-        CharactersStatus = "Pulling your characters...";
+        CharactersBusy = true;
+        CharactersStatus = _owned.Count > 0 ? "Refreshing..." : "Pulling your characters...";
         var token = _host.Config.Token;
         try
         {
@@ -699,27 +718,29 @@ public partial class ShellViewModel : ObservableObject
             var rosterTask = roster.GetAsync(token);
             var meTask = ingest.CheckTokenAsync(token);
             await Task.WhenAll(rosterTask, meTask).ConfigureAwait(true);
+            if (gen != _characterLoad)
+                return;
             var (status, body) = await rosterTask.ConfigureAwait(true);
             var me = await meTask.ConfigureAwait(true);
 
             if (me.Status == "invalid")
             {
-                ClearCharacters("That token doesn't belong to a member. Check it in Settings.");
+                FailCharacters("That token doesn't belong to a member. Check it in Settings.", keepOnError);
                 return;
             }
             if (me.Status == "error" || status == 0)
             {
-                ClearCharacters("Couldn't reach the tavern. Try again in a bit.");
+                FailCharacters("Couldn't reach the tavern. Try again in a bit.", keepOnError);
                 return;
             }
             if (string.IsNullOrWhiteSpace(me.Name))
             {
-                ClearCharacters("We couldn't tell which account this token belongs to.");
+                FailCharacters("We couldn't tell which account this token belongs to.", keepOnError);
                 return;
             }
             if (status != 200)
             {
-                ClearCharacters("The tavern didn't send your characters.");
+                FailCharacters("The tavern didn't send your characters.", keepOnError);
                 return;
             }
 
@@ -730,7 +751,7 @@ public partial class ShellViewModel : ObservableObject
             }
             catch (System.Text.Json.JsonException)
             {
-                ClearCharacters("The roster didn't look right.");
+                FailCharacters("The roster didn't look right.", keepOnError);
                 return;
             }
 
@@ -745,6 +766,8 @@ public partial class ShellViewModel : ObservableObject
 
             var withDkp = new RosterCharacter[mine.Count];
             await Task.WhenAll(mine.Select((character, index) => FillDkpAsync(roster, character, withDkp, index))).ConfigureAwait(true);
+            if (gen != _characterLoad)
+                return;
             _owned = withDkp.ToList();
             _ownedStatus = mine.Count == 1
                 ? "1 of yours. Pin it if this is the character you main."
@@ -753,7 +776,19 @@ public partial class ShellViewModel : ObservableObject
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException)
         {
-            ClearCharacters("Couldn't reach the tavern. Try again in a bit.");
+            if (gen != _characterLoad)
+                return;
+            FailCharacters("Couldn't reach the tavern. Try again in a bit.", keepOnError);
+        }
+        finally
+        {
+            if (gen == _characterLoad)
+            {
+                CharactersBusy = false;
+                _appliedSyncUtc = _host?.LastSyncUtc;
+                if (Page == "characters" && _host?.LastSyncUtc is { } now && now != seenSync)
+                    _ = LoadCharactersAsync(keepOnError: true);
+            }
         }
     }
 
@@ -774,6 +809,16 @@ public partial class ShellViewModel : ObservableObject
         ];
         _ownedStatus = "3 of yours, highest level first. Pin the one you main.";
         ShowOwned();
+    }
+
+    private void FailCharacters(string status, bool keepOnError)
+    {
+        if (keepOnError && _owned.Count > 0)
+        {
+            CharactersStatus = status;
+            return;
+        }
+        ClearCharacters(status);
     }
 
     private void ClearCharacters(string status)
