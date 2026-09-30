@@ -60,13 +60,18 @@ public static class AppSetupLaunch
         var dest = MacAppDestination();
         return string.Join('\n',
         [
+            "set -e",
             "sleep 2",
             "mnt=$(mktemp -d)",
+            "cleanup() { hdiutil detach \"$mnt\" >/dev/null 2>&1 || true; }",
+            "trap cleanup EXIT",
             $"hdiutil attach -nobrowse -readonly -mountpoint \"$mnt\" \"{dmgPath}\"",
             $"rm -rf \"{dest}\"",
             $"mkdir -p \"{Path.GetDirectoryName(dest)}\"",
             "cp -R \"$mnt/GuildSync Companion.app\" \"" + Path.GetDirectoryName(dest) + "/\"",
-            "hdiutil detach \"$mnt\" >/dev/null",
+            "xattr -dr com.apple.quarantine \"" + dest + "\" >/dev/null 2>&1 || true",
+            "cleanup",
+            "trap - EXIT",
             $"open -n \"{dest}\" --args --show",
             "",
         ]);
@@ -91,6 +96,18 @@ public static class AppSetupLaunch
         var path = Path.Combine(Path.GetTempPath(), "guildsync-install-" + Guid.NewGuid().ToString("N") + ".sh");
         File.WriteAllText(path, "#!/bin/sh\nset -u\n" + script);
         TryMarkExecutable(path);
+        if (OperatingSystem.IsMacOS())
+        {
+            // setsid is a Linux command. nohup keeps the installer alive after this app exits.
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "/bin/sh",
+                ArgumentList = { "-c", "nohup \"" + path + "\" >/dev/null 2>&1 &" },
+                UseShellExecute = false,
+            });
+            return;
+        }
+
         Process.Start(new ProcessStartInfo
         {
             FileName = "setsid",

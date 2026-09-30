@@ -43,7 +43,7 @@ public static class InstallFinder
     {
         try
         {
-            return Directory.Exists(Path.Combine(path, "World of Warcraft.app"));
+            return Directory.EnumerateDirectories(path, "World of Warcraft*.app").Any();
         }
         catch (IOException)
         {
@@ -59,14 +59,16 @@ public static class InstallFinder
     {
         if (!Directory.Exists(path))
             return false;
-        if (!Directory.Exists(Path.Combine(path, "Interface"))
-            && !Directory.Exists(Path.Combine(path, "WTF")))
-            return false;
-        if (HasWowExe(path) || HasMacApp(path))
+        var data = Directory.Exists(Path.Combine(path, "Interface"))
+                   || Directory.Exists(Path.Combine(path, "WTF"));
+        if (HasWowExe(path) && data)
             return true;
-        // The native Mac client keeps World of Warcraft.app beside _classic_beta_.
+        // Battle.net's Mac client: World of Warcraft.app next to, or inside, _classic_beta_.
+        var product = string.Equals(Path.GetFileName(path), AppConstants.ClientSubdir, StringComparison.OrdinalIgnoreCase);
+        if (HasMacApp(path) && (data || product))
+            return true;
         var parent = Directory.GetParent(path)?.FullName;
-        return parent is not null && HasMacApp(parent);
+        return parent is not null && HasMacApp(parent) && (data || product);
     }
 
     /// <summary>
@@ -89,12 +91,12 @@ public static class InstallFinder
 
         if (!Directory.Exists(full))
             return null;
-        if (IsClientDir(full))
-            return full;
-
+        // The product folder is where addons go, not the World of Warcraft folder beside the app.
         var client = Path.Combine(full, AppConstants.ClientSubdir);
         if (IsClientDir(client))
             return client;
+        if (IsClientDir(full))
+            return full;
 
         if (string.Equals(Path.GetFileName(full), AppConstants.ClientSubdir, StringComparison.OrdinalIgnoreCase)
             && Directory.Exists(Path.Combine(full, "Interface")))

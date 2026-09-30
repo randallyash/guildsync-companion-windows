@@ -226,6 +226,9 @@ public class BehaviorTests
         Assert.True(ProcessNames.IsWowClient("WowClassic"));
         Assert.True(ProcessNames.IsWowClient("Wow.exe"));
         Assert.True(ProcessNames.IsWowClient("World of Warcraft"));
+        Assert.True(ProcessNames.IsWowClient("World of Warcraft Classic"));
+        Assert.True(ProcessNames.IsWowClient("World of Warcra"));
+        Assert.False(ProcessNames.IsWowClient("World of Warcraft Helper"));
         Assert.False(ProcessNames.IsWowClient("WowVoiceProxy"));
         Assert.False(ProcessNames.IsWowClient("WowError"));
         Assert.False(ProcessNames.IsWowClient("chrome"));
@@ -539,6 +542,17 @@ public class BehaviorTests
 
         Assert.Equal(client, InstallFinder.Normalize(root));
         Assert.Equal(client, InstallFinder.Normalize(client));
+
+        var fresh = Temp();
+        var product = Path.Combine(fresh, "_classic_beta_");
+        Directory.CreateDirectory(Path.Combine(product, "World of Warcraft.app"));
+        Assert.Equal(product, InstallFinder.Normalize(fresh));
+
+        var classic = Temp();
+        var beta = Path.Combine(classic, "_classic_beta_");
+        Directory.CreateDirectory(Path.Combine(beta, "Interface"));
+        Directory.CreateDirectory(Path.Combine(beta, "World of Warcraft Classic.app"));
+        Assert.Equal(beta, InstallFinder.Normalize(classic));
     }
 
     private sealed class FakeGame(bool running) : IGameProcess

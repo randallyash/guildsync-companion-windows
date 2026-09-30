@@ -14,7 +14,7 @@ Everything lives on the [releases page](https://forgejo.fifthdread.com/Ramzal/gu
 
 ### Windows
 
-1. Download [GuildSyncCompanion-Setup.exe](https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.6/GuildSyncCompanion-Setup.exe).
+1. Download [GuildSyncCompanion-Setup.exe](https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.7/GuildSyncCompanion-Setup.exe).
 2. Double-click it.
 3. Click **Install**, then **Finish**. No admin password. It installs just for your Windows account.
 4. A shortcut shows up on the desktop and in the Start menu, and the app opens.
@@ -53,12 +53,12 @@ To remove it later: `paru -Rns guildsync-companion-git`.
 
 Apple silicon only. The disk image is named that way so you can see it before you open it.
 
-1. Download [GuildSyncCompanion-AppleSilicon.dmg](https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.6/GuildSyncCompanion-AppleSilicon.dmg).
+1. Download [GuildSyncCompanion-AppleSilicon.dmg](https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.7/GuildSyncCompanion-AppleSilicon.dmg).
 2. Open it. The window is titled **GuildSync Apple Silicon**.
 3. Drag **GuildSync Companion** onto **Applications**.
 4. Open **GuildSync Companion** from Applications. If macOS says it cannot be opened, right-click the app and choose **Open**.
 5. Eject the disk image. You do not need to keep it.
-6. Let it find WoW: Forever. The Mac client is the normal World of Warcraft app, usually in Applications. If the app shrugs, browse to that World of Warcraft folder, or to `_classic_beta_` inside it.
+6. Let it find WoW: Forever. Battle.net puts the Mac client in Applications, in a folder named World of Warcraft. The game files are in `_classic_beta_` inside that folder. If the app shrugs, browse to `_classic_beta_`.
 
 To remove it later, drag **GuildSync Companion** out of Applications and into the Trash.
 

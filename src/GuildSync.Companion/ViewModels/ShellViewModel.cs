@@ -53,7 +53,7 @@ public partial class ShellViewModel : ObservableObject
         if (preview == "update")
         {
             UpdatePromptOpen = true;
-            UpdatePromptDetail = "Companion 0.1.7 is ready. GuildSync will close, install, and open again.";
+            UpdatePromptDetail = "Companion 0.1.8 is ready. GuildSync will close, install, and open again.";
         }
         if (preview == "characters")
             LoadCharacterPreview();
