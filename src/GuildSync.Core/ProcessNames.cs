@@ -12,6 +12,9 @@ public static class ProcessNames
         if (string.IsNullOrWhiteSpace(processName))
             return false;
         var name = processName.Trim();
+        if (name.Equals("World of Warcraft", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("World of Warcraft Classic", StringComparison.OrdinalIgnoreCase))
+            return true;
         if (name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
             name = name[..^4];
         if (name.Length < 3 || !name.StartsWith("wow", StringComparison.OrdinalIgnoreCase))

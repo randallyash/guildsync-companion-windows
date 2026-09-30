@@ -58,7 +58,7 @@ Apple silicon only. The disk image is named that way so you can see it before yo
 3. Drag **GuildSync Companion** onto **Applications**.
 4. Open **GuildSync Companion** from Applications. If macOS says it cannot be opened, right-click the app and choose **Open**.
 5. Eject the disk image. You do not need to keep it.
-6. Let it find WoW: Forever. On Apple silicon the game lives in a Whisky or CrossOver bottle. If the app shrugs, browse to the `_classic_beta_` folder in that bottle.
+6. Let it find WoW: Forever. The Mac client is the normal World of Warcraft app, usually in Applications. If the app shrugs, browse to that World of Warcraft folder, or to `_classic_beta_` inside it.
 
 To remove it later, drag **GuildSync Companion** out of Applications and into the Trash.
 

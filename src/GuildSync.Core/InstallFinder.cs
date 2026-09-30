@@ -39,12 +39,34 @@ public static class InstallFinder
         return false;
     }
 
+    public static bool HasMacApp(string path)
+    {
+        try
+        {
+            return Directory.Exists(Path.Combine(path, "World of Warcraft.app"));
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
     public static bool IsClientDir(string path)
     {
-        if (!Directory.Exists(path) || !HasWowExe(path))
+        if (!Directory.Exists(path))
             return false;
-        return Directory.Exists(Path.Combine(path, "Interface"))
-               || Directory.Exists(Path.Combine(path, "WTF"));
+        if (!Directory.Exists(Path.Combine(path, "Interface"))
+            && !Directory.Exists(Path.Combine(path, "WTF")))
+            return false;
+        if (HasWowExe(path) || HasMacApp(path))
+            return true;
+        // The native Mac client keeps World of Warcraft.app beside _classic_beta_.
+        var parent = Directory.GetParent(path)?.FullName;
+        return parent is not null && HasMacApp(parent);
     }
 
     /// <summary>

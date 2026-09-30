@@ -284,7 +284,9 @@ public partial class ShellViewModel : ObservableObject
         }
         else
         {
-            ScanMessage = "No install found automatically. Browse to the folder that contains Wow.exe.";
+            ScanMessage = OperatingSystem.IsMacOS()
+                ? "No install found automatically. Browse to your World of Warcraft folder."
+                : "No install found automatically. Browse to the folder that contains Wow.exe.";
         }
     }
 
@@ -304,7 +306,9 @@ public partial class ShellViewModel : ObservableObject
         var client = InstallFinder.Normalize(GameDir);
         if (client is null)
         {
-            InstallError = "That folder does not look like a WoW: Forever client. It should contain Wow.exe and the Interface and WTF folders.";
+            InstallError = OperatingSystem.IsMacOS()
+                ? "That folder does not look like a WoW: Forever client. Browse to World of Warcraft, or to the _classic_beta_ folder inside it."
+                : "That folder does not look like a WoW: Forever client. It should contain Wow.exe and the Interface and WTF folders.";
             return;
         }
         InstallError = "";

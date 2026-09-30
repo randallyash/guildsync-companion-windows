@@ -225,6 +225,7 @@ public class BehaviorTests
         Assert.True(ProcessNames.IsWowClient("Wow"));
         Assert.True(ProcessNames.IsWowClient("WowClassic"));
         Assert.True(ProcessNames.IsWowClient("Wow.exe"));
+        Assert.True(ProcessNames.IsWowClient("World of Warcraft"));
         Assert.False(ProcessNames.IsWowClient("WowVoiceProxy"));
         Assert.False(ProcessNames.IsWowClient("WowError"));
         Assert.False(ProcessNames.IsWowClient("chrome"));
@@ -512,7 +513,7 @@ public class BehaviorTests
     }
 
     [Fact]
-    public void Unix_search_covers_wine_and_mac_bottles()
+    public void Unix_search_keeps_mac_on_the_native_client()
     {
         var linux = UnixSearchRoots.Candidates("/home/tavern", mac: false);
         Assert.Contains("/home/tavern/.wine/drive_c", linux);
@@ -521,9 +522,23 @@ public class BehaviorTests
         Assert.Contains("/media", linux);
 
         var mac = UnixSearchRoots.Candidates("/Users/tavern", mac: true);
-        Assert.Contains("/Users/tavern/Library/Application Support/CrossOver/Bottles", mac);
-        Assert.Contains("/Users/tavern/Library/Application Support/Whisky", mac);
+        Assert.Contains("/Applications", mac);
+        Assert.Contains("/Users/tavern/Applications", mac);
+        Assert.DoesNotContain("/Users/tavern/.wine/drive_c", mac);
         Assert.DoesNotContain("/media", mac);
+    }
+
+    [Fact]
+    public void Mac_client_is_the_folder_beside_the_app()
+    {
+        var root = Temp();
+        var client = Path.Combine(root, "_classic_beta_");
+        Directory.CreateDirectory(Path.Combine(client, "Interface"));
+        Directory.CreateDirectory(Path.Combine(client, "WTF"));
+        Directory.CreateDirectory(Path.Combine(root, "World of Warcraft.app"));
+
+        Assert.Equal(client, InstallFinder.Normalize(root));
+        Assert.Equal(client, InstallFinder.Normalize(client));
     }
 
     private sealed class FakeGame(bool running) : IGameProcess

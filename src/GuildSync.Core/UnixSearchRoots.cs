@@ -1,15 +1,26 @@
 namespace GuildSync.Core;
 
 /// <summary>
-/// Usual places a WoW: Forever client shows up under Wine, Lutris, Steam,
-/// Bottles, CrossOver, or Whisky. The caller drops paths that are not there.
+/// Usual places a WoW: Forever client shows up. Linux is Wine, Lutris, Steam,
+/// and Bottles. Mac is the native client in Applications.
 /// </summary>
 public static class UnixSearchRoots
 {
     public static IReadOnlyList<string> Candidates(string home, bool mac)
     {
-        var list = new List<string>
+        if (mac)
         {
+            return
+            [
+                Path.Combine(home, "Applications"),
+                "/Applications",
+                Path.Combine(home, "Games"),
+                Path.Combine(home, "games"),
+            ];
+        }
+
+        return
+        [
             Path.Combine(home, "Games"),
             Path.Combine(home, "games"),
             Path.Combine(home, ".wine", "drive_c"),
@@ -22,22 +33,8 @@ public static class UnixSearchRoots
             Path.Combine(home, ".var", "app", "com.valvesoftware.Steam", "data", "Steam", "steamapps", "compatdata"),
             Path.Combine(home, ".local", "share", "bottles", "bottles"),
             Path.Combine(home, ".var", "app", "com.usebottles.bottles", "data", "bottles", "bottles"),
-        };
-
-        if (mac)
-        {
-            list.Add(Path.Combine(home, "Applications"));
-            list.Add("/Applications");
-            list.Add(Path.Combine(home, "Library", "Application Support", "CrossOver", "Bottles"));
-            list.Add(Path.Combine(home, "Library", "Application Support", "Whisky"));
-            list.Add(Path.Combine(home, "Library", "Application Support", "com.isaacmarovitz.Whisky"));
-        }
-        else
-        {
-            list.Add("/media");
-            list.Add("/mnt");
-        }
-
-        return list;
+            "/media",
+            "/mnt",
+        ];
     }
 }
