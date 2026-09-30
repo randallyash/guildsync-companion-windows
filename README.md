@@ -92,15 +92,15 @@ dotnet test
 
 Members don't need .NET installed. `build-windows.sh` writes `dist/GuildSyncCompanion-Setup.exe` and needs NSIS (`makensis`). `build-macos.sh` writes the Apple silicon disk image. The Arch package is `packaging/arch`. It clones this Forgejo repo and publishes the Linux build, same pattern as the other packages in [Fifthdread/pkgbuilds](https://forgejo.fifthdread.com/Fifthdread/pkgbuilds).
 
-## Blizzard
+## Is it safe?
 
-This stays inside the rules Blizzard has published for addons and for third-party programs.
+Yes. This is a free addon and a small uploader. It is not a cheat, and we are not affiliated with Blizzard Entertainment.
 
-The in-game half is a normal addon. It uses the UI API, writes your character info to `GuildSync.lua` through SavedVariables, and costs nothing. Their addon policy allows that. Paid addons are the thing they ban.
+The addon uses the normal UI API and writes your character info to `GuildSync.lua`. That is the SavedVariables file the game already saves for addons. Blizzard's addon rules allow that. Paid addons are the thing they ban, and this one costs nothing.
 
-The companion stays outside the client. It installs that addon in `Interface\AddOns\GuildSync` and uploads `GuildSync.lua` after the game has saved it. It leaves `Wow.exe`, the game archives, and the network protocol alone. It does not inject code, hook the process, read memory, send keystrokes, or play for you. When it checks whether you are logged in, it reads the process name, the same fact the process list shows.
+The companion stays outside the game. It installs the addon in `Interface\AddOns\GuildSync` and uploads `GuildSync.lua` after the game has saved it. It leaves `Wow.exe`, the game archives, and the network protocol alone. It does not inject code, hook the process, read memory, send keystrokes, or play for you. To see if you are logged in, it reads the process name. That is the same fact the process list shows.
 
-Blizzard's August 2025 notice is about programs that modify the client: cheats and memory readers. An addon plus an uploader for the file that addon saved is the same kind of tool as Warcraft Logs. That is the lane this was built for.
+Blizzard's August 2025 notice is about programs that modify the client: cheats and memory readers. An addon plus an uploader for the file that addon saved is the same kind of tool as Warcraft Logs.
 
 The crest in the window is the Twilight Tavern guild mark from our site. We use our own art.
 
