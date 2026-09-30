@@ -45,17 +45,20 @@
         <Grid Grid.Row="1" ColumnDefinitions="300,*">
           <Border Classes="rail">
             <DockPanel>
-              <StackPanel DockPanel.Dock="Bottom" Spacing="10" Margin="0,16,0,0">
-                <TextBlock Classes="muted" FontSize="12" Text="{Binding Disclaimer}"/>
+              <StackPanel DockPanel.Dock="Bottom" Margin="0,16,0,0">
                 <TextBlock Text="{Binding CompanionVersion}" Foreground="#6c7380" FontSize="12"/>
               </StackPanel>
               <StackPanel Spacing="8">
-                <Image Source="/Assets/crest.png" Width="230" Height="230" HorizontalAlignment="Center"/>
+                <Button Classes="crest" Command="{Binding OpenSiteCommand}" ToolTip.Tip="twilighttavern.co">
+                  <Image Source="/Assets/crest.png" Width="230" Height="230" IsHitTestVisible="False"/>
+                </Button>
                 <TextBlock Text="GUILDSYNC" Classes="kicker" HorizontalAlignment="Center"/>
                 <TextBlock Text="Companion" Foreground="#9aa1ad" HorizontalAlignment="Center" Margin="0,-4,0,12"/>
                 <StackPanel Spacing="4" IsVisible="{Binding ShowNav}">
                   <Button Classes="nav" Classes.selected="{Binding Page, Converter={StaticResource Eq}, ConverterParameter=home}"
                           Content="Home" Command="{Binding ShowHomeCommand}"/>
+                  <Button Classes="nav" Classes.selected="{Binding Page, Converter={StaticResource Eq}, ConverterParameter=characters}"
+                          Content="Characters" Command="{Binding ShowCharactersCommand}"/>
                   <Button Classes="nav" Classes.selected="{Binding Page, Converter={StaticResource Eq}, ConverterParameter=settings}"
                           Content="Settings" Command="{Binding ShowSettingsCommand}"/>
                   <Button Classes="nav" Classes.selected="{Binding Page, Converter={StaticResource Eq}, ConverterParameter=about}"
@@ -144,8 +147,8 @@
                   </Border>
                 </UniformGrid>
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                  <Button Classes="gold" Content="Sync now" Command="{Binding SyncNowCommand}" MinWidth="140"/>
-                  <Button Classes="ghost" Content="Check for addon updates" Command="{Binding CheckAddonCommand}"/>
+                  <Button Classes="gold" Content="Sync now" Command="{Binding SyncNowCommand}" MinWidth="140" HorizontalContentAlignment="Center"/>
+                  <Button Classes="ghost" Content="Check for updates" Command="{Binding CheckUpdatesCommand}"/>
                 </StackPanel>
                 <Border Classes="card">
                   <StackPanel Spacing="8">
@@ -161,6 +164,42 @@
                                Classes="muted" IsVisible="{Binding !Activity.Count}"/>
                   </StackPanel>
                 </Border>
+              </StackPanel>
+
+              <!-- Characters -->
+              <StackPanel Spacing="16" IsVisible="{Binding Page, Converter={StaticResource Eq}, ConverterParameter=characters}">
+                <TextBlock Text="CHARACTERS" Classes="kicker"/>
+                <TextBlock Text="Your characters" Classes="h1"/>
+                <TextBlock Classes="muted" Text="{Binding CharactersStatus}" TextWrapping="Wrap"/>
+                <Grid ColumnDefinitions="*,70,64,64,88,78" Margin="4,0,4,0">
+                  <TextBlock Text="Character" Classes="kicker"/>
+                  <TextBlock Grid.Column="1" Text="Level" Classes="kicker" HorizontalAlignment="Right"/>
+                  <TextBlock Grid.Column="2" Text="iLvl" Classes="kicker" HorizontalAlignment="Right"/>
+                  <TextBlock Grid.Column="3" Text="DKP" Classes="kicker" HorizontalAlignment="Right"/>
+                  <TextBlock Grid.Column="4" Text="Seen" Classes="kicker" HorizontalAlignment="Right"/>
+                </Grid>
+                <ItemsControl ItemsSource="{Binding Characters}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:CompileBindings="False">
+                      <Border Classes="card" Padding="16,12" Margin="0,0,0,8">
+                        <Grid ColumnDefinitions="*,70,64,64,88,78">
+                          <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding Name}" Foreground="{Binding NameBrush}" FontWeight="SemiBold" FontSize="16"/>
+                            <TextBlock Text="{Binding Detail}" Classes="muted" FontSize="13"/>
+                          </StackPanel>
+                          <TextBlock Grid.Column="1" Text="{Binding Level}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                          <TextBlock Grid.Column="2" Text="{Binding ItemLevel}" Foreground="#f0d98c" FontSize="16" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                          <TextBlock Grid.Column="3" Text="{Binding Dkp}" Foreground="{Binding DkpBrush}" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                          <TextBlock Grid.Column="4" Text="{Binding Seen}" Classes="muted" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                          <Button Grid.Column="5" Classes="choice" Classes.selected="{Binding IsMain}"
+                                  Content="{Binding PinLabel}" Command="{Binding PinCommand}"
+                                  HorizontalAlignment="Right" VerticalAlignment="Center"
+                                  Padding="10,6" HorizontalContentAlignment="Center"/>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
               </StackPanel>
 
               <!-- Settings -->
@@ -190,9 +229,9 @@
                 </StackPanel>
                 <TextBlock Classes="muted" Text="{Binding SettingsMessage}"/>
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                  <Button Classes="gold" Content="Save" Command="{Binding SaveCommand}" MinWidth="120"/>
+                  <Button Classes="gold" Content="Save" Command="{Binding SaveCommand}" MinWidth="120" HorizontalContentAlignment="Center"/>
                   <Button Classes="ghost" Content="Sync now" Command="{Binding SyncNowCommand}"/>
-                  <Button Classes="ghost" Content="Check for addon updates" Command="{Binding CheckAddonCommand}"/>
+                  <Button Classes="ghost" Content="Check for updates" Command="{Binding CheckUpdatesCommand}"/>
                 </StackPanel>
               </StackPanel>
 

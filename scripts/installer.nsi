@@ -11,7 +11,7 @@ ManifestDPIAware true
 !include "LogicLib.nsh"
 
 !ifndef APP_VERSION
-  !define APP_VERSION "0.1.0"
+  !define APP_VERSION "0.1.1"
 !endif
 !ifndef OUTFILE
   !define OUTFILE "..\dist\GuildSyncCompanion-Setup.exe"
@@ -102,6 +102,12 @@ Section "Install"
   WriteRegDWORD HKCU "${UNINSTKEY}" "NoRepair" 1
   ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
   WriteRegDWORD HKCU "${UNINSTKEY}" "EstimatedSize" "$0"
+
+  ; Silent installs are the in-app updater. Open the new copy when the files are in place.
+  IfSilent silent_launch end_launch
+  silent_launch:
+    Exec "$INSTDIR\${EXE}"
+  end_launch:
 SectionEnd
 
 Section "Uninstall"

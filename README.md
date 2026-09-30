@@ -10,9 +10,7 @@ Same idea as the [Linux tray app](https://forgejo.fifthdread.com/Fifthdread/guil
 
 ## Grab it and go
 
-Download [GuildSyncCompanion-Setup.exe](https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.0/GuildSyncCompanion-Setup.exe) and double-click it.
-
-Windows is going to be dramatic about it. The window says Windows protected your PC. Click **More info**, then **Run anyway**. We don't have a paid code-signing certificate yet, so Windows treats us like a stranger. The app is ours. The steps below are the whole install.
+Download [GuildSyncCompanion-Setup.exe](https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.1/GuildSyncCompanion-Setup.exe) and double-click it.
 
 1. Click **Install**, then **Finish**. No admin password. It installs just for your Windows account and drops a shortcut on the desktop and in the Start menu.
 2. The app opens. Go to the [upload page](https://twilighttavern.co/upload), log in with Discord, and copy your upload token.
@@ -20,7 +18,7 @@ Windows is going to be dramatic about it. The window says Windows protected your
 4. Let it find WoW: Forever. If it shrugs, browse to the folder that has `Wow.exe` and `_classic_beta_` in it.
 5. It installs the addon. You're done.
 
-Close the window whenever you want. It keeps running next to the clock and syncs when you log out. Left-click the icon if you need it again. The menu is Settings, Sync Now, Check for Addon Updates, About, and Quit.
+Close the window whenever you want. It keeps running next to the clock and syncs when you log out. Left-click the icon if you need it again. The menu is Settings, Sync Now, Check for Updates, About, and Quit.
 
 Want it gone? Start menu, GuildSync Companion, Uninstall. Or Settings, Apps. Your token stays put, so reinstalling is painless.
 
@@ -29,6 +27,8 @@ Want it gone? Start menu, GuildSync Companion, Uninstall. Or Settings, Apps. You
 - Watches `WTF\Account\*\SavedVariables\GuildSync.lua` and uploads it when it changes.
 - Keeps an eye on things while the game is open. When you log out, one last sync, then it waits.
 - Installs and updates the GuildSync addon from our Forgejo repo, and only inside `Interface\AddOns\GuildSync`.
+- **Check for updates** looks at the addon and the Windows app. It installs a newer addon, and if a newer setup is on Forgejo it downloads that, closes, and comes back on the new version.
+- **Characters** is yours only, matched to the upload token. Name, class, level, item level, DKP, and when they were last seen. Pin the one you main and it stays at the top.
 
 ## Building it
 
@@ -47,26 +47,15 @@ dotnet publish src/GuildSync.Companion -c Release -r win-x64 --self-contained tr
 
 ## Blizzard
 
-We're not Blizzard, and they haven't reviewed or endorsed this.
+This stays inside the rules Blizzard has published for addons and for third-party programs.
 
-The app installs the GuildSync addon the normal way and uploads the file that addon saves. It leaves `Wow.exe` alone. It doesn't read game memory, inject anything, or play the game. To know when you're logged in, it looks at the process name, the same thing Task Manager shows. The app and the addon are free.
+The in-game half is a normal addon. It uses the UI API, writes your character info to `GuildSync.lua` through SavedVariables, and costs nothing. Their addon policy allows that. Paid addons are the thing they ban.
 
-Blizzard's August 2025 note is about programs that modify the client. Addons and file uploaders are a different bucket, and they still get the last word on their game. This is us being straight with you, not legal advice.
+The Windows app stays outside the client. It installs that addon in `Interface\AddOns\GuildSync` and uploads `GuildSync.lua` after the game has saved it. It leaves `Wow.exe`, the game archives, and the network protocol alone. It does not inject code, hook the process, read memory, send keystrokes, or play for you. When it checks whether you are logged in, it reads the process name, the same fact Task Manager shows.
 
-The crest in the window is ours, from the guild site. No Blizzard logos.
+Blizzard's August 2025 notice is about programs that modify the client: cheats and memory readers. An addon plus an uploader for the file that addon saved is the same kind of tool as Warcraft Logs. That is the lane this was built for.
 
-## Signing
-
-Nothing in here is signed. A self-signed certificate would still scare Windows, so we don't ship one.
-
-When we have a real certificate, on a Windows machine with the Windows SDK:
-
-```powershell
-$env:SIGN_PFX_PASSWORD = '...'
-.\scripts\sign-windows.ps1 -Pfx C:\path\guild.pfx -Exe .\dist\GuildSyncCompanion-Setup.exe
-```
-
-Sign the setup. That's the file people download. The script refuses a self-signed cert. The `signtool` that comes with some Linux packages signs Java jars and will not sign this exe.
+The crest in the window is the Twilight Tavern guild mark from our site. We use our own art.
 
 ## License
 

@@ -400,6 +400,102 @@ public class BehaviorTests
             => Task.FromResult(handle(request));
     }
 
+    [Fact]
+    public void Roster_sorts_highest_level_first_and_joins_the_name()
+    {
+        const string json = """
+            {"characters":[
+              {"name":"Rukh","surname":"Jadefire","class":"Rogue","spec":"Combat","race":"Orc","level":36,"ilvl":39.4,"last_seen":100},
+              {"name":"Aldric","surname":"Hollowbrook","class":"Paladin","spec":"Retribution","race":"Dwarf","level":56,"ilvl":49.7,"last_seen":200},
+              {"name":"","surname":"","class":"Mage","level":10},
+              {"name":"Fifth","surname":"Dreadclaw","class":"Druid","spec":"Druid","race":"High Order Skyborne","level":3,"ilvl":3.6,"last_seen":300}
+            ]}
+            """;
+        var rows = RosterList.Parse(json);
+        Assert.Equal(["Aldric Hollowbrook", "Rukh Jadefire", "Fifth Dreadclaw"], rows.Select(row => row.Name).ToArray());
+        Assert.Equal("49.7", RosterList.FormatItemLevel(49.7));
+        Assert.Equal("2d ago", RosterList.Ago(DateTimeOffset.UtcNow.ToUnixTimeSeconds() - 2 * 86400 - 30, DateTimeOffset.UtcNow));
+    }
+
+    [Fact]
+    public void Roster_keeps_one_players_characters_and_pins_the_main()
+    {
+        const string json = """
+            {"characters":[
+              {"id":1562,"name":"Rukh","surname":"Jadefire","player":"Ramzal","class":"Rogue","level":36,"ilvl":39.4,"last_seen":100},
+              {"id":1560,"name":"Aldric","surname":"Hollowbrook","player":"Test Player 6","class":"Paladin","level":56,"ilvl":49.7,"last_seen":200},
+              {"id":1565,"name":"Ramzal","surname":"Bamzal","player":"ramzal","class":"Mage","level":3,"ilvl":2.3,"last_seen":300},
+              {"id":1447,"name":"Fifth","surname":"Dreadclaw","player":"Fifthdread","class":"Druid","level":3,"ilvl":3.6,"last_seen":300}
+            ]}
+            """;
+        var mine = RosterList.ForPlayer(RosterList.Parse(json), " Ramzal ");
+        Assert.Equal(["Rukh Jadefire", "Ramzal Bamzal"], mine.Select(row => row.Name).ToArray());
+        Assert.Empty(RosterList.ForPlayer(mine, ""));
+        Assert.Empty(RosterList.ForPlayer(mine, "Fifthdread"));
+
+        var pinned = RosterList.Order(mine, 1565);
+        Assert.Equal(["Ramzal Bamzal", "Rukh Jadefire"], pinned.Select(row => row.Name).ToArray());
+        Assert.Equal(["Rukh Jadefire", "Ramzal Bamzal"], RosterList.Order(mine, null).Select(row => row.Name).ToArray());
+    }
+
+    [Fact]
+    public void Dkp_reads_the_character_page_span()
+    {
+        Assert.Equal(0, DkpRead.FromHtml("""<span class="ff-stat-num ff-num ff-dkp-pos">0</span>"""));
+        Assert.Equal(12, DkpRead.FromHtml("""<span class="ff-dkp-pos">12</span>"""));
+        Assert.Equal(-4, DkpRead.FromHtml("""<span class="ff-stat-num ff-num ff-dkp-neg">4</span>"""));
+        Assert.Equal(-4, DkpRead.FromHtml("""<span class="ff-dkp-neg">-4</span>"""));
+        Assert.Equal(1200, DkpRead.FromHtml("""<span class="ff-dkp-pos">1,200</span>"""));
+        Assert.Null(DkpRead.FromHtml("""<span class="ff-stat-num ff-num">0</span>"""));
+        Assert.Null(DkpRead.FromHtml(""));
+        Assert.Equal("—", RosterList.FormatDkp(null));
+        Assert.Equal("-4", RosterList.FormatDkp(-4));
+    }
+
+    [Fact]
+    public void Config_remembers_the_pinned_main()
+    {
+        var path = Path.Combine(Temp(), "config.json");
+        var store = new ConfigStore(path);
+        store.Data.MainCharacterId = 1565;
+        store.Save();
+        Assert.Equal(1565, new ConfigStore(path).Data.MainCharacterId);
+
+        store.Data.MainCharacterId = 0;
+        store.Data.Normalize();
+        Assert.Null(store.Data.MainCharacterId);
+    }
+
+    [Fact]
+    public void App_update_picks_the_newer_setup_on_our_forgejo()
+    {
+        const string json = """
+            [
+              {"tag_name":"v0.1.0","draft":false,"prerelease":false,"assets":[
+                {"name":"GuildSyncCompanion-Setup.exe","browser_download_url":"https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.0/GuildSyncCompanion-Setup.exe"}
+              ]},
+              {"tag_name":"v0.2.0","draft":false,"prerelease":false,"assets":[
+                {"name":"GuildSyncCompanion-Setup.exe","browser_download_url":"https://evil.example/GuildSyncCompanion-Setup.exe"}
+              ]},
+              {"tag_name":"v0.3.0","draft":false,"prerelease":true,"assets":[
+                {"name":"GuildSyncCompanion-Setup.exe","browser_download_url":"https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.3.0/GuildSyncCompanion-Setup.exe"}
+              ]},
+              {"tag_name":"v0.1.4","draft":false,"prerelease":false,"assets":[
+                {"name":"GuildSyncCompanion-Setup.exe","browser_download_url":"https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.4/GuildSyncCompanion-Setup.exe"}
+              ]}
+            ]
+            """;
+
+        var chosen = AppReleases.Choose(json, "0.1.0", "https://forgejo.fifthdread.com");
+        Assert.NotNull(chosen);
+        Assert.Equal("0.1.4", chosen.Version);
+        Assert.EndsWith("/v0.1.4/GuildSyncCompanion-Setup.exe", chosen.DownloadUrl);
+        Assert.Null(AppReleases.Choose(json, "0.1.4", "https://forgejo.fifthdread.com"));
+        Assert.False(AppReleases.IsTrustedSetupUrl("https://evil.example/GuildSyncCompanion-Setup.exe", "https://forgejo.fifthdread.com"));
+        Assert.False(VersionOrder.IsNewer("0.1.0", "0.1.0"));
+        Assert.True(VersionOrder.IsNewer("v0.2", "0.1.9"));
+    }
+
     private sealed class FakeGame(bool running) : IGameProcess
     {
         public bool Running { get; set; } = running;

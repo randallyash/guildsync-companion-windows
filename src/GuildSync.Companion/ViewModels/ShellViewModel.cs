@@ -13,6 +13,9 @@ public partial class ShellViewModel : ObservableObject
     private readonly CompanionHost? _host;
     private readonly bool _preview;
     private int _toastGen;
+    private List<RosterCharacter> _owned = [];
+    private string _ownedStatus = "";
+    private int? _previewMainId = 1;
 
     public ShellViewModel(CompanionHost host, bool showOnLaunch)
     {
@@ -41,8 +44,10 @@ public partial class ShellViewModel : ObservableObject
         AutoUpdate = true;
         NotifyMode = "failures";
         StartWithWindows = true;
-        if (preview is "home" or "settings" or "about")
+        if (preview is "home" or "settings" or "about" or "characters")
             LoadHomePreview();
+        if (preview == "characters")
+            LoadCharacterPreview();
         if (preview == "install")
         {
             FoundInstalls.Add(@"C:\Program Files\World of Warcraft\_classic_beta_");
@@ -66,6 +71,7 @@ public partial class ShellViewModel : ObservableObject
 
     public ObservableCollection<string> Activity { get; } = [];
     public ObservableCollection<string> FoundInstalls { get; } = [];
+    public ObservableCollection<CharacterRow> Characters { get; } = [];
 
     [ObservableProperty] private string page = "token";
     [ObservableProperty] private string token = "";
@@ -89,10 +95,11 @@ public partial class ShellViewModel : ObservableObject
     [ObservableProperty] private string notifyMode = "failures";
     [ObservableProperty] private bool startWithWindows = true;
     [ObservableProperty] private string settingsMessage = "";
+    [ObservableProperty] private string charactersStatus = "";
     [ObservableProperty] private bool toastOpen;
     [ObservableProperty] private string toastText = "";
 
-    public bool ShowNav => Page is "home" or "settings" or "about";
+    public bool ShowNav => Page is "home" or "characters" or "settings" or "about";
     public bool NotifyFailures => NotifyMode == "failures";
     public bool NotifyAlways => NotifyMode == "always";
     public bool NotifyNever => NotifyMode == "never";
@@ -255,7 +262,7 @@ public partial class ShellViewModel : ObservableObject
         SetupDone = true;
         if (update.Contains("failed", StringComparison.OrdinalIgnoreCase))
         {
-            SetupMessage = "Completed, but the addon could not be installed automatically. You can retry from Check for Addon Updates.";
+            SetupMessage = "Completed, but the addon could not be installed automatically. You can retry from Check for updates.";
         }
         else
         {
@@ -277,6 +284,21 @@ public partial class ShellViewModel : ObservableObject
 
     [RelayCommand]
     private void ShowHome() => Page = _host?.Config.Configured == false && !_preview ? "token" : "home";
+
+    [RelayCommand]
+    private async Task ShowCharactersAsync()
+    {
+        if (_host is not null && !_host.Config.Configured && !_preview)
+        {
+            Page = "token";
+            Dialogs?.ShowWindow();
+            return;
+        }
+
+        Page = "characters";
+        Dialogs?.ShowWindow();
+        await LoadCharactersAsync().ConfigureAwait(true);
+    }
 
     [RelayCommand]
     private void ShowSettings()
@@ -324,15 +346,60 @@ public partial class ShellViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task CheckAddonAsync()
+    private async Task CheckUpdatesAsync()
     {
         if (_preview || _host is null)
         {
-            NoteLocal("Preview only. The addon was not checked.");
+            const string preview = "Preview only. Nothing was updated.";
+            SettingsMessage = preview;
+            NoteLocal(preview);
             return;
         }
-        await _host.CheckAddonAsync(manual: true).ConfigureAwait(true);
+
+        SettingsMessage = "Checking for updates...";
+        var addon = await _host.CheckAddonAsync(manual: true).ConfigureAwait(true);
+
+        string app;
+        var restarting = false;
+        try
+        {
+            using var client = new AppUpdateClient();
+            var release = await client.LatestNewerAsync().ConfigureAwait(true);
+            if (release is null)
+            {
+                app = $"Companion is up to date ({AppConstants.Version}).";
+            }
+            else if (!OperatingSystem.IsWindows())
+            {
+                app = $"Companion {release.Version} is out. Install that setup on Windows.";
+            }
+            else
+            {
+                SettingsMessage = $"{addon} Downloading companion {release.Version}...";
+                var folder = Path.Combine(Path.GetTempPath(), "GuildSyncCompanion");
+                var installer = await client.DownloadInstallerAsync(release, folder).ConfigureAwait(true);
+                if (installer is null)
+                {
+                    app = "The app update didn't download. Try again in a bit.";
+                }
+                else
+                {
+                    app = $"Updating the app to {release.Version}. This window will close and reopen.";
+                    AppSetupLaunch.StartSilent(installer);
+                    restarting = true;
+                }
+            }
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException)
+        {
+            app = "Couldn't reach the app release list. Try again in a bit.";
+        }
+
+        _host.Mention(app);
+        SettingsMessage = $"{addon} {app}";
         Pull();
+        if (restarting)
+            Dialogs?.Shutdown();
     }
 
     [RelayCommand(CanExecute = nameof(CanSubmit))]
@@ -485,6 +552,159 @@ public partial class ShellViewModel : ObservableObject
         Activity.Clear();
         foreach (var line in _host.ActivitySnapshot())
             Activity.Add(line);
+    }
+
+    private void PinCharacter(int id)
+    {
+        if (id <= 0)
+            return;
+
+        if (_preview || _host is null)
+        {
+            _previewMainId = _previewMainId == id ? null : id;
+            ShowOwned();
+            return;
+        }
+
+        _host.Config.MainCharacterId = _host.Config.MainCharacterId == id ? null : id;
+        if (!Persist())
+        {
+            CharactersStatus = "Couldn't save which character you main.";
+            return;
+        }
+        ShowOwned();
+    }
+
+    private async Task LoadCharactersAsync()
+    {
+        if (_preview || _host is null)
+        {
+            LoadCharacterPreview();
+            return;
+        }
+
+        CharactersStatus = "Pulling your characters...";
+        var token = _host.Config.Token;
+        try
+        {
+            using var roster = new RosterClient();
+            using var ingest = new IngestClient();
+            var rosterTask = roster.GetAsync(token);
+            var meTask = ingest.CheckTokenAsync(token);
+            await Task.WhenAll(rosterTask, meTask).ConfigureAwait(true);
+            var (status, body) = await rosterTask.ConfigureAwait(true);
+            var me = await meTask.ConfigureAwait(true);
+
+            if (me.Status == "invalid")
+            {
+                ClearCharacters("That token doesn't belong to a member. Check it in Settings.");
+                return;
+            }
+            if (me.Status == "error" || status == 0)
+            {
+                ClearCharacters("Couldn't reach the tavern. Try again in a bit.");
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(me.Name))
+            {
+                ClearCharacters("We couldn't tell which account this token belongs to.");
+                return;
+            }
+            if (status != 200)
+            {
+                ClearCharacters("The tavern didn't send your characters.");
+                return;
+            }
+
+            IReadOnlyList<RosterCharacter> parsed;
+            try
+            {
+                parsed = RosterList.Parse(body);
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                ClearCharacters("The roster didn't look right.");
+                return;
+            }
+
+            var mine = RosterList.ForPlayer(parsed, me.Name);
+            if (mine.Count == 0)
+            {
+                _owned = [];
+                Characters.Clear();
+                CharactersStatus = $"No characters synced for {me.Name} yet. Log one in and it'll show up here.";
+                return;
+            }
+
+            var withDkp = new RosterCharacter[mine.Count];
+            await Task.WhenAll(mine.Select((character, index) => FillDkpAsync(roster, character, withDkp, index))).ConfigureAwait(true);
+            _owned = withDkp.ToList();
+            _ownedStatus = mine.Count == 1
+                ? "1 of yours. Pin it if this is the character you main."
+                : $"{mine.Count} of yours, highest level first. Pin the one you main.";
+            ShowOwned();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException)
+        {
+            ClearCharacters("Couldn't reach the tavern. Try again in a bit.");
+        }
+    }
+
+    private static async Task FillDkpAsync(RosterClient roster, RosterCharacter character, RosterCharacter[] dest, int index)
+    {
+        var html = await roster.GetCharacterPageAsync(character.Id).ConfigureAwait(false);
+        dest[index] = character with { Dkp = DkpRead.FromHtml(html) };
+    }
+
+    private void LoadCharacterPreview()
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        _owned =
+        [
+            new RosterCharacter("Aldric Hollowbrook", "Paladin", "Retribution", "Dwarf", 56, 49.7, now - 2 * 86400, Id: 1, Player: "You", Dkp: 42),
+            new RosterCharacter("Balgor Steelclaw", "Mage", "Fire", "Dwarf", 54, 42.9, now - 2 * 86400, Id: 2, Player: "You", Dkp: 0),
+            new RosterCharacter("Rukh Jadefire", "Rogue", "Combat", "Orc", 36, 39.4, now - 3600, Id: 3, Player: "You", Dkp: -3),
+        ];
+        _ownedStatus = "3 of yours, highest level first. Pin the one you main.";
+        ShowOwned();
+    }
+
+    private void ClearCharacters(string status)
+    {
+        _owned = [];
+        Characters.Clear();
+        CharactersStatus = status;
+    }
+
+    private void ShowOwned()
+    {
+        var main = _preview || _host is null ? _previewMainId : _host.Config.MainCharacterId;
+        var now = DateTimeOffset.Now;
+        Characters.Clear();
+        foreach (var character in RosterList.Order(_owned, main))
+        {
+            var detail = character.ClassName;
+            if (character.Spec.Length > 0 && !string.Equals(character.Spec, character.ClassName, StringComparison.OrdinalIgnoreCase))
+                detail = detail.Length == 0 ? character.Spec : detail + " · " + character.Spec;
+            if (character.Race.Length > 0)
+                detail = detail.Length == 0 ? character.Race : detail + " · " + character.Race;
+            var id = character.Id;
+            Characters.Add(new CharacterRow
+            {
+                Id = id,
+                Name = character.Name,
+                Detail = detail,
+                Level = character.Level > 0 ? character.Level.ToString() : "—",
+                ItemLevel = RosterList.FormatItemLevel(character.ItemLevel),
+                Dkp = RosterList.FormatDkp(character.Dkp),
+                Seen = RosterList.Ago(character.LastSeenUnix, now),
+                IsMain = main is int pinned && pinned == id,
+                PinCommand = new RelayCommand(() => PinCharacter(id)),
+                NameBrush = CharacterRow.BrushFor(character.ClassName),
+                DkpBrush = CharacterRow.DkpColor(character.Dkp),
+            });
+        }
+        CharactersStatus = _ownedStatus;
     }
 
     private void LoadHomePreview()

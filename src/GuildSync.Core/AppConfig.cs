@@ -18,6 +18,9 @@ public sealed class AppConfig
 
     public bool StartWithWindows { get; set; } = true;
 
+    /// <summary>Roster id of the character this member pinned as their main.</summary>
+    public int? MainCharacterId { get; set; }
+
     public Dictionary<string, SyncStamp> Synced { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
     [JsonIgnore]
@@ -43,6 +46,8 @@ public sealed class AppConfig
         AddonVersion ??= "";
         if (Notify is not ("failures" or "always" or "never"))
             Notify = "failures";
+        if (MainCharacterId is <= 0)
+            MainCharacterId = null;
         Synced ??= new Dictionary<string, SyncStamp>(StringComparer.OrdinalIgnoreCase);
     }
 }

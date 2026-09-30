@@ -277,6 +277,8 @@ public sealed class CompanionHost : IDisposable
         return Note(message, toast: manual, failure: false);
     }
 
+    public void Mention(string message) => Note(message, toast: false, failure: false);
+
     public bool ShouldToast(bool failure)
     {
         return Config.Notify switch

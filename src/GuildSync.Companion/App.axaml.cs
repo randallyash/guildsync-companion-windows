@@ -60,7 +60,7 @@ public class App : Application
         var menu = new NativeMenu();
         menu.Items.Add(new NativeMenuItem("Settings...") { Command = model.ShowSettingsCommand });
         menu.Items.Add(new NativeMenuItem("Sync Now") { Command = model.SyncNowCommand });
-        menu.Items.Add(new NativeMenuItem("Check for Addon Updates") { Command = model.CheckAddonCommand });
+        menu.Items.Add(new NativeMenuItem("Check for Updates") { Command = model.CheckUpdatesCommand });
         menu.Items.Add(new NativeMenuItemSeparator());
         menu.Items.Add(new NativeMenuItem("About...") { Command = model.ShowAboutCommand });
         menu.Items.Add(new NativeMenuItem("Quit") { Command = model.QuitCommand });

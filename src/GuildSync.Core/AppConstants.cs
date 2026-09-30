@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace GuildSync.Core;
 
 /// <summary>
@@ -6,13 +8,15 @@ namespace GuildSync.Core;
 /// </summary>
 public static class AppConstants
 {
-    public const string Version = "0.1.0";
+    public const string Version = "0.1.1";
     public const string AppName = "GuildSync Companion";
     public const string UserAgent = "GuildSync-Companion-Windows/" + Version;
 
     public const string DefaultServerBase = "https://twilighttavern.co";
     public const string ForgejoBase = "https://forgejo.fifthdread.com";
     public const string AddonRepo = "Fifthdread/Guild_Sync";
+    public const string AppRepo = "Ramzal/guildsync-companion-windows";
+    public const string SetupAssetName = "GuildSyncCompanion-Setup.exe";
     public const string AddonBranch = "master";
     public const string AddonFolder = "GuildSync";
     public const string SavedVariablesFile = "GuildSync.lua";
@@ -30,7 +34,11 @@ public static class AppConstants
 
     public static string IngestUrl => ServerBase + "/api/v1/ingest";
     public static string MeUrl => ServerBase + "/api/v1/me";
+    public static string RosterUrl => ServerBase + "/api/v1/roster";
     public static string UploadPageUrl => ServerBase + "/upload";
+
+    public static string CharacterPageUrl(int id) =>
+        ServerBase + "/characters/" + id.ToString(CultureInfo.InvariantCulture);
 
     public static string AddonTocUrl =>
         $"{ForgejoBase}/{AddonRepo}/raw/branch/{AddonBranch}/{AddonFolder}/{AddonFolder}.toc";
@@ -40,6 +48,9 @@ public static class AppConstants
 
     public static string AddonArchiveUrl =>
         $"{ForgejoBase}/{AddonRepo}/archive/{AddonBranch}.zip";
+
+    public static string AppReleasesUrl =>
+        $"{ForgejoBase}/api/v1/repos/{AppRepo}/releases?limit=20";
 
     public static string ResolveServerBase()
     {
