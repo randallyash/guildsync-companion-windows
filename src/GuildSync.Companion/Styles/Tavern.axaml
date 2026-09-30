@@ -1,0 +1,213 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Style Selector="Window">
+    <Setter Property="FontFamily" Value="Segoe UI, Inter, sans-serif"/>
+    <Setter Property="FontSize" Value="15"/>
+    <Setter Property="Foreground" Value="#e8eaf0"/>
+  </Style>
+
+  <Style Selector="TextBlock.h1">
+    <Setter Property="FontSize" Value="30"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Foreground" Value="#f4f1e6"/>
+  </Style>
+
+  <Style Selector="TextBlock.kicker">
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Foreground" Value="#c8a951"/>
+    <Setter Property="LetterSpacing" Value="1.6"/>
+  </Style>
+
+  <Style Selector="TextBlock.muted">
+    <Setter Property="Foreground" Value="#9aa1ad"/>
+    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+    <Setter Property="LineHeight" Value="22"/>
+  </Style>
+
+  <Style Selector="TextBlock.error">
+    <Setter Property="Foreground" Value="#ff7b72"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+  </Style>
+
+  <Style Selector="TextBlock.ok">
+    <Setter Property="Foreground" Value="#71c971"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+  </Style>
+
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="#12141a"/>
+    <Setter Property="BorderBrush" Value="#14ffffff"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="16"/>
+    <Setter Property="Padding" Value="18,16"/>
+    <Setter Property="BoxShadow" Value="0 10 28 0 #66000000"/>
+  </Style>
+
+  <Style Selector="Border.rail">
+    <Setter Property="Background" Value="#0e1016"/>
+    <Setter Property="BorderBrush" Value="#14ffffff"/>
+    <Setter Property="BorderThickness" Value="0,0,1,0"/>
+    <Setter Property="Padding" Value="22,8,22,22"/>
+  </Style>
+
+  <Style Selector="Button">
+    <Setter Property="CornerRadius" Value="10"/>
+    <Setter Property="Padding" Value="16,10"/>
+    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="Cursor" Value="Hand"/>
+  </Style>
+
+  <Style Selector="Button.gold">
+    <Setter Property="Background" Value="#c8a951"/>
+    <Setter Property="Foreground" Value="#1a1408"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="BorderThickness" Value="0"/>
+  </Style>
+  <Style Selector="Button.gold:pointerover">
+    <Setter Property="Background" Value="#f0d98c"/>
+  </Style>
+  <Style Selector="Button.gold:disabled">
+    <Setter Property="Opacity" Value="0.45"/>
+  </Style>
+
+  <Style Selector="Button.ghost">
+    <Setter Property="Background" Value="#171a21"/>
+    <Setter Property="Foreground" Value="#e8eaf0"/>
+    <Setter Property="BorderBrush" Value="#24ffffff"/>
+    <Setter Property="BorderThickness" Value="1"/>
+  </Style>
+  <Style Selector="Button.ghost:pointerover">
+    <Setter Property="BorderBrush" Value="#c8a951"/>
+    <Setter Property="Foreground" Value="#f0d98c"/>
+  </Style>
+
+  <Style Selector="Button.nav">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Foreground" Value="#9aa1ad"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    <Setter Property="Padding" Value="14,11"/>
+    <Setter Property="FontSize" Value="15"/>
+    <Setter Property="BorderThickness" Value="0"/>
+  </Style>
+  <Style Selector="Button.nav:pointerover">
+    <Setter Property="Background" Value="#14ffffff"/>
+    <Setter Property="Foreground" Value="#e8eaf0"/>
+  </Style>
+  <Style Selector="Button.nav.selected">
+    <Setter Property="Background" Value="#24c8a951"/>
+    <Setter Property="Foreground" Value="#f0d98c"/>
+  </Style>
+
+  <Style Selector="Button.link">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Foreground" Value="#f0d98c"/>
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Padding" Value="0,4"/>
+    <Setter Property="HorizontalAlignment" Value="Left"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+  </Style>
+  <Style Selector="Button.link:pointerover">
+    <Setter Property="Foreground" Value="#ffffff"/>
+  </Style>
+
+  <Style Selector="Button.choice">
+    <Setter Property="Background" Value="#171a21"/>
+    <Setter Property="Foreground" Value="#9aa1ad"/>
+    <Setter Property="BorderBrush" Value="#14ffffff"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Padding" Value="12,8"/>
+  </Style>
+  <Style Selector="Button.choice.selected">
+    <Setter Property="Background" Value="#24c8a951"/>
+    <Setter Property="Foreground" Value="#f0d98c"/>
+    <Setter Property="BorderBrush" Value="#59c8a951"/>
+  </Style>
+
+  <Style Selector="Button.chrome">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Foreground" Value="#9aa1ad"/>
+    <Setter Property="Width" Value="46"/>
+    <Setter Property="Height" Value="36"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="CornerRadius" Value="8"/>
+    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="BorderThickness" Value="0"/>
+  </Style>
+  <Style Selector="Button.chrome:pointerover">
+    <Setter Property="Background" Value="#14ffffff"/>
+    <Setter Property="Foreground" Value="#e8eaf0"/>
+  </Style>
+  <Style Selector="Button.chrome.close:pointerover">
+    <Setter Property="Background" Value="#ff7b72"/>
+    <Setter Property="Foreground" Value="#1a0b0b"/>
+  </Style>
+
+  <Style Selector="TextBox">
+    <Setter Property="Background" Value="#171a21"/>
+    <Setter Property="Foreground" Value="#e8eaf0"/>
+    <Setter Property="BorderBrush" Value="#1fffffff"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="10"/>
+    <Setter Property="Padding" Value="12,10"/>
+    <Setter Property="CaretBrush" Value="#f0d98c"/>
+  </Style>
+  <Style Selector="TextBox:focus">
+    <Setter Property="BorderBrush" Value="#c8a951"/>
+  </Style>
+
+  <Style Selector="CheckBox">
+    <Setter Property="Foreground" Value="#e8eaf0"/>
+  </Style>
+
+  <Style Selector="ProgressBar">
+    <Setter Property="Foreground" Value="#c8a951"/>
+    <Setter Property="Background" Value="#171a21"/>
+    <Setter Property="Height" Value="6"/>
+    <Setter Property="CornerRadius" Value="3"/>
+  </Style>
+
+  <Style Selector="ListBox">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0"/>
+  </Style>
+  <Style Selector="ListBoxItem">
+    <Setter Property="Padding" Value="12,10"/>
+    <Setter Property="Margin" Value="0,0,0,8"/>
+    <Setter Property="CornerRadius" Value="10"/>
+    <Setter Property="Background" Value="#171a21"/>
+    <Setter Property="BorderBrush" Value="#14ffffff"/>
+    <Setter Property="BorderThickness" Value="1"/>
+  </Style>
+  <Style Selector="ListBoxItem:pointerover">
+    <Setter Property="BorderBrush" Value="#59c8a951"/>
+  </Style>
+  <Style Selector="ListBoxItem:selected">
+    <Setter Property="Background" Value="#24c8a951"/>
+    <Setter Property="BorderBrush" Value="#c8a951"/>
+  </Style>
+
+  <Style Selector="Ellipse.presence">
+    <Setter Property="Width" Value="8"/>
+    <Setter Property="Height" Value="8"/>
+    <Setter Property="Fill" Value="#c8a951"/>
+  </Style>
+  <Style Selector="Ellipse.presence.live">
+    <Setter Property="Fill" Value="#71c971"/>
+  </Style>
+  <Style Selector="Ellipse.presence.bad">
+    <Setter Property="Fill" Value="#ff7b72"/>
+  </Style>
+
+  <Style Selector="Border.toast">
+    <Setter Property="Background" Value="#171a21"/>
+    <Setter Property="BorderBrush" Value="#59c8a951"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="14"/>
+    <Setter Property="Padding" Value="16,12"/>
+    <Setter Property="BoxShadow" Value="0 16 40 0 #99000000"/>
+  </Style>
+</Styles>

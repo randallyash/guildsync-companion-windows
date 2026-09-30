@@ -1,0 +1,224 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:GuildSync.Companion.ViewModels"
+        xmlns:conv="using:GuildSync.Companion.Converters"
+        xmlns:adc="using:Avalonia.Data.Converters"
+        x:Class="GuildSync.Companion.ShellWindow"
+        x:DataType="vm:ShellViewModel"
+        Title="GuildSync Companion"
+        Width="1080" Height="720"
+        MinWidth="960" MinHeight="640"
+        WindowStartupLocation="CenterScreen"
+        WindowDecorations="None"
+        TransparencyLevelHint="None"
+        Background="#FF0A0B0E"
+        Icon="/Assets/crest.png">
+  <Window.Resources>
+    <conv:EqConverter x:Key="Eq"/>
+  </Window.Resources>
+
+  <Border BorderBrush="#33c8a951" BorderThickness="1" Background="#FF0A0B0E">
+    <Grid>
+      <Ellipse Width="640" Height="380" HorizontalAlignment="Right" VerticalAlignment="Top"
+               Margin="0,-160,-80,0" Fill="#12c8a951" IsHitTestVisible="False"/>
+      <Ellipse Width="520" Height="320" HorizontalAlignment="Left" VerticalAlignment="Top"
+               Margin="-180,-140,0,0" Fill="#14183064" IsHitTestVisible="False"/>
+
+      <Grid RowDefinitions="52,*">
+        <Grid Grid.Row="0" ColumnDefinitions="300,*" Background="#cc0a0b0e"
+              PointerPressed="DragWindow">
+          <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="22,0">
+            <Image Source="/Assets/crest-64.png" Width="28" Height="28"/>
+            <TextBlock Text="Twilight Tavern" Foreground="#f0d98c" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <TextBlock Text="GuildSync" Foreground="#9aa1ad" VerticalAlignment="Center"/>
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4" Margin="0,8,8,8">
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="0,0,12,0">
+              <Ellipse Classes="presence" Classes.live="{Binding PresenceLive}" Classes.idle="{Binding PresenceIdle}" Classes.bad="{Binding PresenceBad}"/>
+              <TextBlock Text="{Binding GameValue}" Foreground="#9aa1ad" VerticalAlignment="Center"/>
+            </StackPanel>
+            <Button Classes="chrome" Content="—" Click="Minimize"/>
+            <Button Classes="chrome close" Content="✕" Click="HideToTray"/>
+          </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1" ColumnDefinitions="300,*">
+          <Border Classes="rail">
+            <DockPanel>
+              <StackPanel DockPanel.Dock="Bottom" Spacing="10" Margin="0,16,0,0">
+                <TextBlock Classes="muted" FontSize="12" Text="{Binding Disclaimer}"/>
+                <TextBlock Text="{Binding CompanionVersion}" Foreground="#6c7380" FontSize="12"/>
+              </StackPanel>
+              <StackPanel Spacing="8">
+                <Image Source="/Assets/crest.png" Width="230" Height="230" HorizontalAlignment="Center"/>
+                <TextBlock Text="GUILDSYNC" Classes="kicker" HorizontalAlignment="Center"/>
+                <TextBlock Text="Companion" Foreground="#9aa1ad" HorizontalAlignment="Center" Margin="0,-4,0,12"/>
+                <StackPanel Spacing="4" IsVisible="{Binding ShowNav}">
+                  <Button Classes="nav" Classes.selected="{Binding Page, Converter={StaticResource Eq}, ConverterParameter=home}"
+                          Content="Home" Command="{Binding ShowHomeCommand}"/>
+                  <Button Classes="nav" Classes.selected="{Binding Page, Converter={StaticResource Eq}, ConverterParameter=settings}"
+                          Content="Settings" Command="{Binding ShowSettingsCommand}"/>
+                  <Button Classes="nav" Classes.selected="{Binding Page, Converter={StaticResource Eq}, ConverterParameter=about}"
+                          Content="About" Command="{Binding ShowAboutCommand}"/>
+                </StackPanel>
+              </StackPanel>
+            </DockPanel>
+          </Border>
+
+          <ScrollViewer Grid.Column="1" Padding="36,28,36,28">
+            <Grid>
+              <!-- Token -->
+              <StackPanel Spacing="16" MaxWidth="640" IsVisible="{Binding Page, Converter={StaticResource Eq}, ConverterParameter=token}">
+                <TextBlock Text="FIRST WATCH" Classes="kicker"/>
+                <TextBlock Text="Bring your characters to the tavern" Classes="h1" TextWrapping="Wrap"/>
+                <TextBlock Classes="muted" Text="Paste the upload token from the Sync Gamedata page. It is tied to your Discord login and is not a Guild Hall API key."/>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                  <TextBox PlaceholderText="Paste your upload token" Text="{Binding Token}" PasswordChar="{Binding TokenMask}"/>
+                  <Button Grid.Column="1" Classes="ghost" Content="{Binding TokenToggleLabel}" Command="{Binding ToggleTokenCommand}"/>
+                </Grid>
+                <Button Classes="link" Content="Open the Sync Gamedata page" Command="{Binding OpenUploadPageCommand}"/>
+                <TextBlock Classes="error" Text="{Binding TokenMessage}" IsVisible="{Binding TokenMessage, Converter={x:Static adc:StringConverters.IsNotNullOrEmpty}}"/>
+                <Button Classes="gold" Content="Next" HorizontalAlignment="Right" Command="{Binding NextTokenCommand}" MinWidth="120"/>
+              </StackPanel>
+
+              <!-- Install -->
+              <StackPanel Spacing="16" IsVisible="{Binding Page, Converter={StaticResource Eq}, ConverterParameter=install}">
+                <TextBlock Text="THE CLIENT" Classes="kicker"/>
+                <TextBlock Text="Where does World of Warcraft live?" Classes="h1" TextWrapping="Wrap"/>
+                <TextBlock Classes="muted" Text="{Binding ScanMessage}"/>
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding Scanning}"/>
+                <ListBox ItemsSource="{Binding FoundInstalls}" SelectedItem="{Binding SelectedInstall}" MaxHeight="180"
+                         IsVisible="{Binding !Scanning}">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:CompileBindings="False">
+                      <TextBlock Text="{Binding}" TextWrapping="Wrap"/>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+                <TextBox PlaceholderText="Or paste the folder that contains Wow.exe" Text="{Binding GameDir}"/>
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Button Classes="ghost" Content="Browse" Command="{Binding BrowseCommand}"/>
+                  <Button Classes="gold" Content="Use this folder" Command="{Binding UseFolderCommand}"/>
+                </StackPanel>
+                <TextBlock Classes="error" Text="{Binding InstallError}"/>
+              </StackPanel>
+
+              <!-- Setup -->
+              <StackPanel Spacing="16" MaxWidth="640" IsVisible="{Binding Page, Converter={StaticResource Eq}, ConverterParameter=setup}">
+                <TextBlock Text="THE ADDON" Classes="kicker"/>
+                <TextBlock Text="Hanging the sign" Classes="h1"/>
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding !SetupDone}"/>
+                <TextBlock Classes="muted" Text="{Binding SetupMessage}"/>
+                <Button Classes="gold" Content="Finish" HorizontalAlignment="Left" Command="{Binding FinishCommand}"
+                        IsEnabled="{Binding SetupDone}" MinWidth="120"/>
+              </StackPanel>
+
+              <!-- Home -->
+              <StackPanel Spacing="22" IsVisible="{Binding Page, Converter={StaticResource Eq}, ConverterParameter=home}">
+                <StackPanel Spacing="8">
+                  <TextBlock Text="THE WATCH" Classes="kicker"/>
+                  <TextBlock Text="{Binding Headline}" Classes="h1" TextWrapping="Wrap"/>
+                  <TextBlock Text="{Binding Detail}" Classes="muted"/>
+                </StackPanel>
+                <UniformGrid Columns="3" ColumnSpacing="12">
+                  <Border Classes="card">
+                    <StackPanel Spacing="6">
+                      <TextBlock Text="GAME" Classes="kicker"/>
+                      <TextBlock Text="{Binding GameValue}" FontSize="26" FontWeight="SemiBold"/>
+                      <TextBlock Text="WoW: Forever" Classes="muted"/>
+                    </StackPanel>
+                  </Border>
+                  <Border Classes="card">
+                    <StackPanel Spacing="6">
+                      <TextBlock Text="LAST SYNC" Classes="kicker"/>
+                      <TextBlock Text="{Binding SyncValue}" FontSize="26" FontWeight="SemiBold"/>
+                      <TextBlock Text="Saved characters" Classes="muted"/>
+                    </StackPanel>
+                  </Border>
+                  <Border Classes="card">
+                    <StackPanel Spacing="6">
+                      <TextBlock Text="ADDON" Classes="kicker"/>
+                      <TextBlock Text="{Binding AddonValue}" FontSize="26" FontWeight="SemiBold"/>
+                      <TextBlock Text="GuildSync" Classes="muted"/>
+                    </StackPanel>
+                  </Border>
+                </UniformGrid>
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Button Classes="gold" Content="Sync now" Command="{Binding SyncNowCommand}" MinWidth="140"/>
+                  <Button Classes="ghost" Content="Check for addon updates" Command="{Binding CheckAddonCommand}"/>
+                </StackPanel>
+                <Border Classes="card">
+                  <StackPanel Spacing="8">
+                    <TextBlock Text="RECENT" Classes="kicker"/>
+                    <ItemsControl ItemsSource="{Binding Activity}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:CompileBindings="False">
+                          <TextBlock Text="{Binding}" Foreground="#9aa1ad" FontSize="13" Margin="0,3"/>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="Nothing yet. Log into a character and the watch starts on its own."
+                               Classes="muted" IsVisible="{Binding !Activity.Count}"/>
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+
+              <!-- Settings -->
+              <StackPanel Spacing="16" MaxWidth="680" IsVisible="{Binding Page, Converter={StaticResource Eq}, ConverterParameter=settings}">
+                <TextBlock Text="SETTINGS" Classes="kicker"/>
+                <TextBlock Text="How the watch behaves" Classes="h1"/>
+                <TextBlock Text="Upload token" Foreground="#9aa1ad"/>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                  <TextBox Text="{Binding Token}" PasswordChar="{Binding TokenMask}"/>
+                  <Button Grid.Column="1" Classes="ghost" Content="{Binding TokenToggleLabel}" Command="{Binding ToggleTokenCommand}"/>
+                </Grid>
+                <TextBlock Text="Install folder" Foreground="#9aa1ad"/>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                  <TextBox Text="{Binding GameDir}"/>
+                  <Button Grid.Column="1" Classes="ghost" Content="Browse" Command="{Binding BrowseCommand}"/>
+                </Grid>
+                <CheckBox Content="Automatically update the addon" IsChecked="{Binding AutoUpdate}"/>
+                <CheckBox Content="Start with Windows" IsChecked="{Binding StartWithWindows}" IsEnabled="{Binding CanUseWindowsStartup}"/>
+                <TextBlock Text="Notifications" Foreground="#9aa1ad"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button Classes="choice" Classes.selected="{Binding NotifyFailures}" Content="Failures only"
+                          Command="{Binding SetNotifyCommand}" CommandParameter="failures"/>
+                  <Button Classes="choice" Classes.selected="{Binding NotifyAlways}" Content="Always"
+                          Command="{Binding SetNotifyCommand}" CommandParameter="always"/>
+                  <Button Classes="choice" Classes.selected="{Binding NotifyNever}" Content="Never"
+                          Command="{Binding SetNotifyCommand}" CommandParameter="never"/>
+                </StackPanel>
+                <TextBlock Classes="muted" Text="{Binding SettingsMessage}"/>
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Button Classes="gold" Content="Save" Command="{Binding SaveCommand}" MinWidth="120"/>
+                  <Button Classes="ghost" Content="Sync now" Command="{Binding SyncNowCommand}"/>
+                  <Button Classes="ghost" Content="Check for addon updates" Command="{Binding CheckAddonCommand}"/>
+                </StackPanel>
+              </StackPanel>
+
+              <!-- About -->
+              <StackPanel Spacing="14" MaxWidth="640" IsVisible="{Binding Page, Converter={StaticResource Eq}, ConverterParameter=about}">
+                <TextBlock Text="ABOUT" Classes="kicker"/>
+                <TextBlock Text="GuildSync Companion" Classes="h1"/>
+                <TextBlock Classes="muted" Text="{Binding Disclaimer}"/>
+                <Border Classes="card">
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="{Binding CompanionVersion, StringFormat=Companion {0}}"/>
+                    <TextBlock Text="{Binding AddonValue, StringFormat=Addon {0}}"/>
+                    <TextBlock Classes="muted" Text="Reads WTF SavedVariables/GuildSync.lua. Writes only Interface/AddOns/GuildSync."/>
+                  </StackPanel>
+                </Border>
+                <Button Classes="link" Content="twilighttavern.co" Command="{Binding OpenSiteCommand}"/>
+              </StackPanel>
+
+              <Border Classes="toast" HorizontalAlignment="Left" VerticalAlignment="Bottom" MaxWidth="420"
+                      IsVisible="{Binding ToastOpen}" Margin="0,24,0,0">
+                <TextBlock Text="{Binding ToastText}" TextWrapping="Wrap"/>
+              </Border>
+            </Grid>
+          </ScrollViewer>
+        </Grid>
+      </Grid>
+    </Grid>
+  </Border>
+</Window>

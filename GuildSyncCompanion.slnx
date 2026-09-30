@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GuildSync.Companion/GuildSync.Companion.csproj" />
+    <Project Path="src/GuildSync.Core/GuildSync.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GuildSync.Core.Tests/GuildSync.Core.Tests.csproj" />
+  </Folder>
+</Solution>

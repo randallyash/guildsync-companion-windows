@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="GuildSync.Companion.ToastWindow"
+        Width="380" Height="92"
+        WindowDecorations="None"
+        ShowInTaskbar="False"
+        Topmost="True"
+        Background="Transparent"
+        CanResize="False">
+  <Border Classes="toast" Margin="8">
+    <StackPanel Spacing="4">
+      <TextBlock Text="GuildSync" Classes="kicker"/>
+      <TextBlock x:Name="Body" TextWrapping="Wrap" Foreground="#e8eaf0"/>
+    </StackPanel>
+  </Border>
+</Window>
