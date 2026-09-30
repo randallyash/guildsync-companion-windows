@@ -260,6 +260,21 @@
           </ScrollViewer>
         </Grid>
       </Grid>
+      <Panel IsVisible="{Binding UpdatePromptOpen}" Background="#e60a0b0e">
+        <Border Classes="card" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="480" Padding="28,26">
+          <StackPanel Spacing="16">
+            <TextBlock Text="UPDATE FOUND" Classes="kicker"/>
+            <TextBlock Text="Do you want to update?" Classes="h1" TextWrapping="Wrap"/>
+            <TextBlock Classes="muted" Text="{Binding UpdatePromptDetail}" TextWrapping="Wrap"/>
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+              <Button Classes="ghost" Content="No" Command="{Binding DeclineUpdateCommand}"
+                      MinWidth="120" HorizontalContentAlignment="Center" IsEnabled="{Binding !UpdatePromptBusy}"/>
+              <Button Classes="gold" Content="Yes" Command="{Binding AcceptUpdateCommand}"
+                      MinWidth="140" HorizontalContentAlignment="Center" IsEnabled="{Binding !UpdatePromptBusy}"/>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+      </Panel>
     </Grid>
   </Border>
 </Window>

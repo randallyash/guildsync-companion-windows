@@ -13,6 +13,8 @@ public partial class ShellViewModel : ObservableObject
     private readonly CompanionHost? _host;
     private readonly bool _preview;
     private int _toastGen;
+    private AppRelease? _pendingAppUpdate;
+    private string _addonUpdateNote = "";
     private List<RosterCharacter> _owned = [];
     private string _ownedStatus = "";
     private int? _previewMainId = 1560;
@@ -38,14 +40,19 @@ public partial class ShellViewModel : ObservableObject
         _preview = true;
         ShowOnLaunch = true;
         CompanionVersion = "v" + AppConstants.Version;
-        Page = preview;
+        Page = preview == "update" ? "home" : preview;
         Token = "";
         GameDir = @"C:\Program Files\World of Warcraft\_classic_beta_";
         AutoUpdate = true;
         NotifyMode = "failures";
         StartWithWindows = true;
-        if (preview is "home" or "settings" or "about" or "characters")
+        if (preview is "home" or "settings" or "about" or "characters" or "update")
             LoadHomePreview();
+        if (preview == "update")
+        {
+            UpdatePromptOpen = true;
+            UpdatePromptDetail = "Companion 0.1.4 is ready. GuildSync will close, install, and open again.";
+        }
         if (preview == "characters")
             LoadCharacterPreview();
         if (preview == "install")
@@ -96,6 +103,9 @@ public partial class ShellViewModel : ObservableObject
     [ObservableProperty] private bool startWithWindows = true;
     [ObservableProperty] private string settingsMessage = "";
     [ObservableProperty] private string charactersStatus = "";
+    [ObservableProperty] private bool updatePromptOpen;
+    [ObservableProperty] private bool updatePromptBusy;
+    [ObservableProperty] private string updatePromptDetail = "";
     [ObservableProperty] private bool toastOpen;
     [ObservableProperty] private string toastText = "";
 
@@ -357,49 +367,94 @@ public partial class ShellViewModel : ObservableObject
         }
 
         SettingsMessage = "Checking for updates...";
+        Dialogs?.ShowWindow();
         var addon = await _host.CheckAddonAsync(manual: true).ConfigureAwait(true);
+        _addonUpdateNote = addon;
 
-        string app;
-        var restarting = false;
         try
         {
             using var client = new AppUpdateClient();
             var release = await client.LatestNewerAsync().ConfigureAwait(true);
             if (release is null)
             {
-                app = $"Companion is up to date ({AppConstants.Version}).";
+                FinishUpdateCheck(addon, $"Companion is up to date ({AppConstants.Version}).");
+                return;
             }
-            else if (!OperatingSystem.IsWindows())
+            if (!OperatingSystem.IsWindows())
             {
-                app = $"Companion {release.Version} is out. Install that setup on Windows.";
+                FinishUpdateCheck(addon, $"Companion {release.Version} is out. Install that setup on Windows.");
+                return;
             }
-            else
-            {
-                SettingsMessage = $"{addon} Downloading companion {release.Version}...";
-                var folder = Path.Combine(Path.GetTempPath(), "GuildSyncCompanion");
-                var installer = await client.DownloadInstallerAsync(release, folder).ConfigureAwait(true);
-                if (installer is null)
-                {
-                    app = "The app update didn't download. Try again in a bit.";
-                }
-                else
-                {
-                    app = $"Updating the app to {release.Version}. This window will close and reopen.";
-                    AppSetupLaunch.StartSilent(installer);
-                    restarting = true;
-                }
-            }
+
+            _pendingAppUpdate = release;
+            UpdatePromptBusy = false;
+            UpdatePromptDetail = $"Companion {release.Version} is ready. GuildSync will close, install, and open again.";
+            UpdatePromptOpen = true;
+            SettingsMessage = $"{addon} Companion {release.Version} is ready.";
+            Dialogs?.ShowWindow();
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException)
         {
-            app = "Couldn't reach the app release list. Try again in a bit.";
+            FinishUpdateCheck(addon, "Couldn't reach the app release list. Try again in a bit.");
+        }
+    }
+
+    [RelayCommand]
+    private void DeclineUpdate()
+    {
+        if (UpdatePromptBusy)
+            return;
+        var version = _pendingAppUpdate?.Version;
+        UpdatePromptOpen = false;
+        _pendingAppUpdate = null;
+        if (_preview || _host is null || version is null)
+            return;
+        FinishUpdateCheck(_addonUpdateNote, $"Companion {version} is ready when you want it.");
+    }
+
+    [RelayCommand]
+    private async Task AcceptUpdateAsync()
+    {
+        if (UpdatePromptBusy)
+            return;
+        if (_preview || _host is null || _pendingAppUpdate is null)
+        {
+            UpdatePromptDetail = "Preview only. Nothing was installed.";
+            return;
         }
 
-        _host.Mention(app);
+        UpdatePromptBusy = true;
+        var release = _pendingAppUpdate;
+        UpdatePromptDetail = $"Downloading companion {release.Version}...";
+        try
+        {
+            using var client = new AppUpdateClient();
+            var folder = Path.Combine(Path.GetTempPath(), "GuildSyncCompanion");
+            var installer = await client.DownloadInstallerAsync(release, folder).ConfigureAwait(true);
+            if (installer is null)
+            {
+                UpdatePromptDetail = "The download didn't finish. You can try again.";
+                UpdatePromptBusy = false;
+                return;
+            }
+
+            UpdatePromptDetail = "Installing. GuildSync will close and open again.";
+            _host.Mention($"Updating the app to {release.Version}.");
+            AppSetupLaunch.StartSilent(installer);
+            Dialogs?.Shutdown();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException)
+        {
+            UpdatePromptDetail = "Couldn't download the update. Try again in a bit.";
+            UpdatePromptBusy = false;
+        }
+    }
+
+    private void FinishUpdateCheck(string addon, string app)
+    {
+        _host?.Mention(app);
         SettingsMessage = $"{addon} {app}";
         Pull();
-        if (restarting)
-            Dialogs?.Shutdown();
     }
 
     [RelayCommand(CanExecute = nameof(CanSubmit))]

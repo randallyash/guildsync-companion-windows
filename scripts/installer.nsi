@@ -11,7 +11,7 @@ ManifestDPIAware true
 !include "LogicLib.nsh"
 
 !ifndef APP_VERSION
-  !define APP_VERSION "0.1.2"
+  !define APP_VERSION "0.1.3"
 !endif
 !ifndef OUTFILE
   !define OUTFILE "..\dist\GuildSyncCompanion-Setup.exe"
@@ -56,6 +56,7 @@ VIAddVersionKey "LegalCopyright" "Copyright © 2026 Fifthdread and contributors.
 !define MUI_FINISHPAGE_TITLE "Ready to paste your token"
 !define MUI_FINISHPAGE_TEXT "GuildSync Companion is on this PC.$\r$\n$\r$\nClick Finish and it will open. Paste the token from twilighttavern.co/upload. A shortcut is on the desktop and in the Start menu if you need it again."
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${EXE}"
+!define MUI_FINISHPAGE_RUN_PARAMETERS "--show"
 !define MUI_FINISHPAGE_RUN_TEXT "Open GuildSync Companion now"
 !define MUI_FINISHPAGE_CANCEL_ENABLED
 
@@ -103,10 +104,10 @@ Section "Install"
   ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
   WriteRegDWORD HKCU "${UNINSTKEY}" "EstimatedSize" "$0"
 
-  ; Silent installs are the in-app updater. Open the new copy when the files are in place.
+  ; Silent installs are the in-app updater. Open the window, not only the tray icon.
   IfSilent silent_launch end_launch
   silent_launch:
-    Exec "$INSTDIR\${EXE}"
+    Exec '"$INSTDIR\${EXE}" --show'
   end_launch:
 SectionEnd
 
