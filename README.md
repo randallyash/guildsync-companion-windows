@@ -2,84 +2,71 @@
 
 ![GuildSync Companion](docs/home.png)
 
-Keeps your World of Warcraft: Forever character data synced to [twilighttavern.co](https://twilighttavern.co). The in-game addon writes `GuildSync.lua`. This app uploads that file. You do not drag it onto the website after every session.
+You play. We keep the character sheet up to date on [twilighttavern.co](https://twilighttavern.co).
 
-This is the Windows companion to the [Linux tray app](https://forgejo.fifthdread.com/Fifthdread/guildsync-companion). Same job, different machinery: Windows install locations, the process list, `%AppData%`, a Run-key startup entry, and a named pipe so a second launch just opens the window.
+The addon in-game writes a file called `GuildSync.lua`. This little Windows app uploads that file for you, so you can stop dragging it onto the website after every raid night.
 
-## What it does
+Same idea as the [Linux tray app](https://forgejo.fifthdread.com/Fifthdread/guildsync-companion). This one is built for Windows.
+
+## Grab it and go
+
+Download [GuildSyncCompanion-Setup.exe](https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.0/GuildSyncCompanion-Setup.exe) and double-click it.
+
+Windows is going to be dramatic about it. The window says Windows protected your PC. Click **More info**, then **Run anyway**. We don't have a paid code-signing certificate yet, so Windows treats us like a stranger. The app is ours. The steps below are the whole install.
+
+1. Click **Install**, then **Finish**. No admin password. It installs just for your Windows account and drops a shortcut on the desktop and in the Start menu.
+2. The app opens. Go to the [upload page](https://twilighttavern.co/upload), log in with Discord, and copy your upload token.
+3. Paste that token in. If what you copied starts with `ffk_`, that's a Guild Hall key. Go back to the upload page and grab the token instead.
+4. Let it find WoW: Forever. If it shrugs, browse to the folder that has `Wow.exe` and `_classic_beta_` in it.
+5. It installs the addon. You're done.
+
+Close the window whenever you want. It keeps running next to the clock and syncs when you log out. Left-click the icon if you need it again. The menu is Settings, Sync Now, Check for Addon Updates, About, and Quit.
+
+Want it gone? Start menu, GuildSync Companion, Uninstall. Or Settings, Apps. Your token stays put, so reinstalling is painless.
+
+## What it's doing while you play
 
 - Watches `WTF\Account\*\SavedVariables\GuildSync.lua` and uploads it when it changes.
-- While the game is open it keeps watching. When the game closes it does one last sync, then waits.
-- Installs and updates the GuildSync addon from the public Forgejo repo, and only inside `Interface\AddOns\GuildSync`.
-- Sits in the notification area. Left-click opens the window. The menu has Settings, Sync Now, Check for Addon Updates, About, and Quit.
+- Keeps an eye on things while the game is open. When you log out, one last sync, then it waits.
+- Installs and updates the GuildSync addon from our Forgejo repo, and only inside `Interface\AddOns\GuildSync`.
 
-## First run
-
-1. Start **GuildSync Companion**.
-2. Paste your upload token from the [Sync Gamedata page](https://twilighttavern.co/upload). Log in with Discord there. A Guild Hall key (`ffk_…`) is not a token.
-3. Let it find the WoW: Forever install, or browse to the folder that contains `Wow.exe` and `_classic_beta_`.
-4. It installs the addon and keeps running in the tray. It also offers to start with Windows.
-
-## For guild members
-
-Send them `GuildSyncCompanion-Setup.exe`. They double-click it. It installs for their Windows account, puts a shortcut on the desktop and in the Start menu, and opens the app. No administrator password.
-
-1. If Windows says it protected the PC, choose **More info**, then **Run anyway**. The setup is unsigned until the guild has a code-signing certificate, so SmartScreen stops on that screen.
-2. Click **Install**, then **Finish**.
-3. Paste the upload token from [twilighttavern.co/upload](https://twilighttavern.co/upload). Log in with Discord on that page. The app finds the game and installs the addon.
-4. Closing the window leaves it running beside the clock.
-
-Uninstall is in the Start menu folder, or in Settings under Apps. The upload token is kept.
-
-## Build
+## Building it
 
 ```bash
 dotnet test
 ./scripts/build-windows.sh
 ```
 
-That writes `dist/GuildSyncCompanion-Setup.exe`. The script also leaves the unpacked app in `dist/win-x64`. .NET does not need to be installed on the member's PC. Building the setup needs NSIS (`makensis`).
+That writes `dist/GuildSyncCompanion-Setup.exe`. Members don't need .NET installed. Building the setup needs NSIS (`makensis`).
+
+If you only want the unpacked app:
 
 ```bash
 dotnet publish src/GuildSync.Companion -c Release -r win-x64 --self-contained true -o dist/win-x64
 ```
 
-## Blizzard's rules
+## Blizzard
 
-GuildSync Companion is not affiliated with, endorsed by, or signed by Blizzard Entertainment. Nothing in this repo is a Blizzard approval.
+We're not Blizzard, and they haven't reviewed or endorsed this.
 
-The desktop app stays outside the game client:
+The app installs the GuildSync addon the normal way and uploads the file that addon saves. It leaves `Wow.exe` alone. It doesn't read game memory, inject anything, or play the game. To know when you're logged in, it looks at the process name, the same thing Task Manager shows. The app and the addon are free.
 
-- It does not modify `Wow.exe`, game archives, or the client's network protocol.
-- It does not inject a DLL, hook the process, read game memory, or send keystrokes.
-- It does not bot, automate combat, or change gameplay.
-- The only process check is the image name, the same fact Task Manager shows, so the app knows when you are playing and when you logged out.
-- The only files it writes are the GuildSync addon folder, which is the normal `Interface\AddOns` path.
-- The only file it reads for upload is `GuildSync.lua`, which the addon itself wrote through SavedVariables.
-- The app and the addon are free. There is no paid unlock.
+Blizzard's August 2025 note is about programs that modify the client. Addons and file uploaders are a different bucket, and they still get the last word on their game. This is us being straight with you, not legal advice.
 
-Blizzard's August 2025 notice targets third-party software that **modifies the game client**. Addons that use the UI API, and uploaders that read a file the addon saved, are a different category. Blizzard still has the last word on its own games. This README is not legal advice, and it is not a claim that Blizzard has reviewed this program.
-
-The window uses the Twilight Tavern crest from the guild site. It does not ship Blizzard's logos or artwork.
+The crest in the window is ours, from the guild site. No Blizzard logos.
 
 ## Signing
 
-There is no Authenticode certificate in this repository, and a self-signed stand-in is not used. Windows SmartScreen only treats a file as a known publisher after it is signed with an OV or EV code signing certificate that a public CA issued to the publisher's legal name.
+Nothing in here is signed. A self-signed certificate would still scare Windows, so we don't ship one.
 
-When the guild has that certificate, on a Windows machine with the Windows SDK:
+When we have a real certificate, on a Windows machine with the Windows SDK:
 
 ```powershell
 $env:SIGN_PFX_PASSWORD = '...'
 .\scripts\sign-windows.ps1 -Pfx C:\path\guild.pfx -Exe .\dist\GuildSyncCompanion-Setup.exe
 ```
 
-Sign the setup file. That is the one members download. SmartScreen looks at it before the installed app.
-
-The script refuses a self-signed certificate. The `signtool` that ships with some Linux packages signs Java jars and cannot sign this exe.
-
-## Theme
-
-Colors match [twilighttavern.co](https://twilighttavern.co): near-black surfaces and the tavern gold. The crest is the guild mark from that site.
+Sign the setup. That's the file people download. The script refuses a self-signed cert. The `signtool` that comes with some Linux packages signs Java jars and will not sign this exe.
 
 ## License
 
