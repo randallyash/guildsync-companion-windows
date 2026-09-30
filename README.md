@@ -20,14 +20,29 @@ This is the Windows companion to the [Linux tray app](https://forgejo.fifthdread
 3. Let it find the WoW: Forever install, or browse to the folder that contains `Wow.exe` and `_classic_beta_`.
 4. It installs the addon and keeps running in the tray. It also offers to start with Windows.
 
+## For guild members
+
+Send them `GuildSyncCompanion-Setup.exe`. They double-click it. It installs for their Windows account, puts a shortcut on the desktop and in the Start menu, and opens the app. No administrator password.
+
+1. If Windows says it protected the PC, choose **More info**, then **Run anyway**. The setup is unsigned until the guild has a code-signing certificate, so SmartScreen stops on that screen.
+2. Click **Install**, then **Finish**.
+3. Paste the upload token from [twilighttavern.co/upload](https://twilighttavern.co/upload). Log in with Discord on that page. The app finds the game and installs the addon.
+4. Closing the window leaves it running beside the clock.
+
+Uninstall is in the Start menu folder, or in Settings under Apps. The upload token is kept.
+
 ## Build
 
 ```bash
 dotnet test
-dotnet publish src/GuildSync.Companion -c Release -r win-x64 --self-contained true -o dist/win-x64
+./scripts/build-windows.sh
 ```
 
-Run `dist/win-x64/GuildSyncCompanion.exe` on Windows. .NET does not need to be installed.
+That writes `dist/GuildSyncCompanion-Setup.exe`. The script also leaves the unpacked app in `dist/win-x64`. .NET does not need to be installed on the member's PC. Building the setup needs NSIS (`makensis`).
+
+```bash
+dotnet publish src/GuildSync.Companion -c Release -r win-x64 --self-contained true -o dist/win-x64
+```
 
 ## Blizzard's rules
 
@@ -55,8 +70,10 @@ When the guild has that certificate, on a Windows machine with the Windows SDK:
 
 ```powershell
 $env:SIGN_PFX_PASSWORD = '...'
-.\scripts\sign-windows.ps1 -Pfx C:\path\guild.pfx -Exe .\dist\win-x64\GuildSyncCompanion.exe
+.\scripts\sign-windows.ps1 -Pfx C:\path\guild.pfx -Exe .\dist\GuildSyncCompanion-Setup.exe
 ```
+
+Sign the setup file. That is the one members download. SmartScreen looks at it before the installed app.
 
 The script refuses a self-signed certificate. The `signtool` that ships with some Linux packages signs Java jars and cannot sign this exe.
 
