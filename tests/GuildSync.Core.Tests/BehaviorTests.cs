@@ -476,16 +476,16 @@ public class BehaviorTests
         const string json = """
             [
               {"tag_name":"v0.1.0","draft":false,"prerelease":false,"assets":[
-                {"name":"GuildSyncCompanion-Setup.exe","browser_download_url":"https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.0/GuildSyncCompanion-Setup.exe"}
+                {"name":"GuildSyncCompanion-Setup.exe","browser_download_url":"https://forgejo.fifthdread.com/Ramzal/guildsync-companion/releases/download/v0.1.0/GuildSyncCompanion-Setup.exe"}
               ]},
               {"tag_name":"v0.2.0","draft":false,"prerelease":false,"assets":[
                 {"name":"GuildSyncCompanion-Setup.exe","browser_download_url":"https://evil.example/GuildSyncCompanion-Setup.exe"}
               ]},
               {"tag_name":"v0.3.0","draft":false,"prerelease":true,"assets":[
-                {"name":"GuildSyncCompanion-Setup.exe","browser_download_url":"https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.3.0/GuildSyncCompanion-Setup.exe"}
+                {"name":"GuildSyncCompanion-Setup.exe","browser_download_url":"https://forgejo.fifthdread.com/Ramzal/guildsync-companion/releases/download/v0.3.0/GuildSyncCompanion-Setup.exe"}
               ]},
               {"tag_name":"v0.1.4","draft":false,"prerelease":false,"assets":[
-                {"name":"GuildSyncCompanion-Setup.exe","browser_download_url":"https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.4/GuildSyncCompanion-Setup.exe"}
+                {"name":"GuildSyncCompanion-Setup.exe","browser_download_url":"https://forgejo.fifthdread.com/Ramzal/guildsync-companion/releases/download/v0.1.4/GuildSyncCompanion-Setup.exe"}
               ]}
             ]
             """;
@@ -502,8 +502,8 @@ public class BehaviorTests
         const string both = """
             [
               {"tag_name":"v0.1.6","draft":false,"prerelease":false,"assets":[
-                {"name":"GuildSyncCompanion-Setup.exe","browser_download_url":"https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.6/GuildSyncCompanion-Setup.exe"},
-                {"name":"GuildSyncCompanion-Setup.run","browser_download_url":"https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.6/GuildSyncCompanion-Setup.run"}
+                {"name":"GuildSyncCompanion-Setup.exe","browser_download_url":"https://forgejo.fifthdread.com/Ramzal/guildsync-companion/releases/download/v0.1.6/GuildSyncCompanion-Setup.exe"},
+                {"name":"GuildSyncCompanion-Setup.run","browser_download_url":"https://forgejo.fifthdread.com/Ramzal/guildsync-companion/releases/download/v0.1.6/GuildSyncCompanion-Setup.run"}
               ]}
             ]
             """;

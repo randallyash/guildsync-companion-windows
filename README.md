@@ -6,15 +6,15 @@ You play. We keep the character sheet up to date on [twilighttavern.co](https://
 
 The addon in-game writes a file called `GuildSync.lua`. This app uploads that file for you, so you can stop dragging it onto the website after every raid night.
 
-Same idea as the [Linux tray app](https://forgejo.fifthdread.com/Fifthdread/guildsync-companion). This one runs on Windows, Linux, and Mac, and it looks the same on all three.
+It runs on Windows, Linux, and Mac, and it looks the same on all three.
 
 ## Grab it and go
 
-Everything lives on the [releases page](https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases). Use the steps for your computer, then the same first-time setup at the bottom.
+Everything lives on the [releases page](https://forgejo.fifthdread.com/Ramzal/guildsync-companion/releases). Use the steps for your computer, then the same first-time setup at the bottom.
 
 ### Windows
 
-1. Download [GuildSyncCompanion-Setup.exe](https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.7/GuildSyncCompanion-Setup.exe).
+1. Download [GuildSyncCompanion-Setup.exe](https://forgejo.fifthdread.com/Ramzal/guildsync-companion/releases/download/v0.1.7/GuildSyncCompanion-Setup.exe).
 2. Double-click it.
 3. Click **Install**, then **Finish**. No admin password. It installs just for your Windows account.
 4. A shortcut shows up on the desktop and in the Start menu, and the app opens.
@@ -53,7 +53,7 @@ To remove it later: `paru -Rns guildsync-companion-git`.
 
 Apple silicon only. The disk image is named that way so you can see it before you open it.
 
-1. Download [GuildSyncCompanion-AppleSilicon.dmg](https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.7/GuildSyncCompanion-AppleSilicon.dmg).
+1. Download [GuildSyncCompanion-AppleSilicon.dmg](https://forgejo.fifthdread.com/Ramzal/guildsync-companion/releases/download/v0.1.7/GuildSyncCompanion-AppleSilicon.dmg).
 2. Open it. The window is titled **GuildSync Apple Silicon**.
 3. Drag **GuildSync Companion** onto **Applications**.
 4. Open **GuildSync Companion** from Applications. If macOS says it cannot be opened, right-click the app and choose **Open**.

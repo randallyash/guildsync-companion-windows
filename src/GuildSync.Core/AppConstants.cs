@@ -17,7 +17,7 @@ public static class AppConstants
     public const string DefaultServerBase = "https://twilighttavern.co";
     public const string ForgejoBase = "https://forgejo.fifthdread.com";
     public const string AddonRepo = "Fifthdread/Guild_Sync";
-    public const string AppRepo = "Ramzal/guildsync-companion-windows";
+    public const string AppRepo = "Ramzal/guildsync-companion";
     public const string WindowsSetupAsset = "GuildSyncCompanion-Setup.exe";
     public const string LinuxSetupAsset = "GuildSyncCompanion-Setup.run";
     public const string LinuxDebAsset = "GuildSyncCompanion.deb";
