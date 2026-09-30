@@ -10,7 +10,7 @@ Same idea as the [Linux tray app](https://forgejo.fifthdread.com/Fifthdread/guil
 
 ## Grab it and go
 
-Download [GuildSyncCompanion-Setup.exe](https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.3/GuildSyncCompanion-Setup.exe) and double-click it.
+Download [GuildSyncCompanion-Setup.exe](https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.4/GuildSyncCompanion-Setup.exe) and double-click it.
 
 1. Click **Install**, then **Finish**. No admin password. It installs just for your Windows account and drops a shortcut on the desktop and in the Start menu.
 2. The app opens. Go to the [upload page](https://twilighttavern.co/upload), log in with Discord, and copy your upload token.
@@ -29,7 +29,7 @@ Want it gone? Start menu, GuildSync Companion, Uninstall. Or Settings, Apps. You
 - Watches `WTF\Account\*\SavedVariables\GuildSync.lua` and uploads it when it changes.
 - Keeps an eye on things while the game is open. When you log out, one last sync, then it waits.
 - Installs and updates the GuildSync addon from our Forgejo repo, and only inside `Interface\AddOns\GuildSync`.
-- **Check for updates** is on Home, in Settings, and in the tray menu. One press checks the addon and the Windows app. A newer addon is installed in place. A newer app asks first. Say yes and it closes, installs, and opens the window again.
+- **Check for updates** is on Home, in Settings, and in the tray menu. Opening the app checks the addon and the app on its own. A newer addon is installed in place. A newer app asks first. Say yes and it closes, installs, and opens the window again. With automatic addon updates on, it looks for a new addon again about every 24 hours while it is running.
 - **Characters** sits under Home. It is only the characters tied to your upload token, not the whole guild. You get the class-colored name, spec, race, level, item level, DKP, and when they were last seen. Click a name to open that character on the site. Pin the one you main and it stays at the top.
 
 ![Your characters](docs/characters.png)

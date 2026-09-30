@@ -46,7 +46,8 @@ public sealed class CompanionHost : IDisposable
         _debounce = debounce ?? TimeSpan.FromSeconds(2);
         _heartbeatEvery = heartbeat ?? TimeSpan.FromSeconds(60);
         _addonEvery = addonEvery ?? TimeSpan.FromHours(24);
-        _initialAddon = initialAddon ?? TimeSpan.FromSeconds(5);
+        // Startup does its own pass. This timer is the one that repeats while the app stays open.
+        _initialAddon = initialAddon ?? _addonEvery;
     }
 
     public AppConfig Config => _store.Data;

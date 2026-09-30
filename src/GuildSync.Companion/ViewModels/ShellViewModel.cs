@@ -51,7 +51,7 @@ public partial class ShellViewModel : ObservableObject
         if (preview == "update")
         {
             UpdatePromptOpen = true;
-            UpdatePromptDetail = "Companion 0.1.4 is ready. GuildSync will close, install, and open again.";
+            UpdatePromptDetail = "Companion 0.1.5 is ready. GuildSync will close, install, and open again.";
         }
         if (preview == "characters")
             LoadCharacterPreview();
@@ -159,6 +159,44 @@ public partial class ShellViewModel : ObservableObject
         WindowsStartup.Apply(_host.Config.StartWithWindows);
         _host.Start();
         Pull();
+        _ = CheckOnLaunchAsync();
+    }
+
+    private async Task CheckOnLaunchAsync()
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(4)).ConfigureAwait(true);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        if (_host is null || UpdatePromptOpen || UpdatePromptBusy)
+            return;
+
+        if (_host.Config.AutoUpdateAddon && !string.IsNullOrWhiteSpace(_host.Config.GameDir))
+        {
+            await _host.CheckAddonAsync(manual: false).ConfigureAwait(true);
+            Pull();
+        }
+
+        if (UpdatePromptOpen || UpdatePromptBusy)
+            return;
+
+        try
+        {
+            using var client = new AppUpdateClient();
+            var release = await client.LatestNewerAsync().ConfigureAwait(true);
+            if (release is null || !OperatingSystem.IsWindows() || UpdatePromptOpen)
+                return;
+            OfferAppUpdate(release, "");
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException)
+        {
+            // A quiet miss at launch is better than a toast before anyone asked.
+        }
     }
 
     [RelayCommand]
@@ -386,12 +424,7 @@ public partial class ShellViewModel : ObservableObject
                 return;
             }
 
-            _pendingAppUpdate = release;
-            UpdatePromptBusy = false;
-            UpdatePromptDetail = $"Companion {release.Version} is ready. GuildSync will close, install, and open again.";
-            UpdatePromptOpen = true;
-            SettingsMessage = $"{addon} Companion {release.Version} is ready.";
-            Dialogs?.ShowWindow();
+            OfferAppUpdate(release, addon);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException)
         {
@@ -448,6 +481,18 @@ public partial class ShellViewModel : ObservableObject
             UpdatePromptDetail = "Couldn't download the update. Try again in a bit.";
             UpdatePromptBusy = false;
         }
+    }
+
+    private void OfferAppUpdate(AppRelease release, string addon)
+    {
+        _pendingAppUpdate = release;
+        UpdatePromptBusy = false;
+        UpdatePromptDetail = $"Companion {release.Version} is ready. GuildSync will close, install, and open again.";
+        UpdatePromptOpen = true;
+        SettingsMessage = string.IsNullOrWhiteSpace(addon)
+            ? $"Companion {release.Version} is ready."
+            : $"{addon} Companion {release.Version} is ready.";
+        Dialogs?.ShowWindow();
     }
 
     private void FinishUpdateCheck(string addon, string app)

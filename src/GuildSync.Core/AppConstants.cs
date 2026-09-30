@@ -8,7 +8,7 @@ namespace GuildSync.Core;
 /// </summary>
 public static class AppConstants
 {
-    public const string Version = "0.1.3";
+    public const string Version = "0.1.4";
     public const string AppName = "GuildSync Companion";
     public const string UserAgent = "GuildSync-Companion-Windows/" + Version;
 

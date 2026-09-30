@@ -11,7 +11,7 @@ ManifestDPIAware true
 !include "LogicLib.nsh"
 
 !ifndef APP_VERSION
-  !define APP_VERSION "0.1.3"
+  !define APP_VERSION "0.1.4"
 !endif
 !ifndef OUTFILE
   !define OUTFILE "..\dist\GuildSyncCompanion-Setup.exe"
