@@ -186,7 +186,7 @@ public class BehaviorTests
     }
 
     [Fact]
-    public void Companion_stamp_uses_the_windows_version()
+    public void Companion_stamp_uses_the_app_version()
     {
         var game = Temp();
         var addon = Path.Combine(game, "Interface", "AddOns", "GuildSync");
@@ -220,7 +220,7 @@ public class BehaviorTests
     }
 
     [Fact]
-    public void Process_names_match_windows_and_wine()
+    public void Process_names_match_the_game()
     {
         Assert.True(ProcessNames.IsWowClient("Wow"));
         Assert.True(ProcessNames.IsWowClient("WowClassic"));
@@ -256,7 +256,7 @@ public class BehaviorTests
         var check = await client.CheckTokenAsync("tok");
         Assert.Equal("ok", check.Status);
         Assert.Equal("Tavern Test", check.Name);
-        Assert.Equal("GuildSync-Companion-Windows/" + AppConstants.Version, seen!.Headers.UserAgent.ToString());
+        Assert.Equal("GuildSync-Companion/" + AppConstants.Version, seen!.Headers.UserAgent.ToString());
         Assert.Equal("tok", seen.Headers.GetValues("X-Upload-Token").Single());
 
         var dir = Temp();
@@ -494,6 +494,36 @@ public class BehaviorTests
         Assert.False(AppReleases.IsTrustedSetupUrl("https://evil.example/GuildSyncCompanion-Setup.exe", "https://forgejo.fifthdread.com"));
         Assert.False(VersionOrder.IsNewer("0.1.0", "0.1.0"));
         Assert.True(VersionOrder.IsNewer("v0.2", "0.1.9"));
+
+        const string both = """
+            [
+              {"tag_name":"v0.1.6","draft":false,"prerelease":false,"assets":[
+                {"name":"GuildSyncCompanion-Setup.exe","browser_download_url":"https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.6/GuildSyncCompanion-Setup.exe"},
+                {"name":"GuildSyncCompanion-Setup.run","browser_download_url":"https://forgejo.fifthdread.com/Ramzal/guildsync-companion-windows/releases/download/v0.1.6/GuildSyncCompanion-Setup.run"}
+              ]}
+            ]
+            """;
+        var linux = AppReleases.Choose(both, "0.1.5", "https://forgejo.fifthdread.com", AppConstants.LinuxSetupAsset);
+        Assert.NotNull(linux);
+        Assert.EndsWith("/GuildSyncCompanion-Setup.run", linux.DownloadUrl);
+        Assert.Null(AppReleases.Choose(both, "0.1.5", "https://forgejo.fifthdread.com", AppConstants.MacSetupAsset));
+        Assert.Equal("0.1.6", AppReleases.Newest(both, "0.1.5"));
+        Assert.Null(AppReleases.Newest(both, "0.1.6"));
+    }
+
+    [Fact]
+    public void Unix_search_covers_wine_and_mac_bottles()
+    {
+        var linux = UnixSearchRoots.Candidates("/home/tavern", mac: false);
+        Assert.Contains("/home/tavern/.wine/drive_c", linux);
+        Assert.Contains("/home/tavern/.local/share/lutris", linux);
+        Assert.Contains("/home/tavern/.steam/steam/steamapps/compatdata", linux);
+        Assert.Contains("/media", linux);
+
+        var mac = UnixSearchRoots.Candidates("/Users/tavern", mac: true);
+        Assert.Contains("/Users/tavern/Library/Application Support/CrossOver/Bottles", mac);
+        Assert.Contains("/Users/tavern/Library/Application Support/Whisky", mac);
+        Assert.DoesNotContain("/media", mac);
     }
 
     private sealed class FakeGame(bool running) : IGameProcess

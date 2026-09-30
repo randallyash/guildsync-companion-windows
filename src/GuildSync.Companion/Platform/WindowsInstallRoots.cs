@@ -38,7 +38,12 @@ public static class WindowsInstallRoots
         }
 
         if (!OperatingSystem.IsWindows())
+        {
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            foreach (var candidate in UnixSearchRoots.Candidates(home, OperatingSystem.IsMacOS()))
+                AddWalk(candidate);
             return Dedup(probe, walk);
+        }
 
         AddProbe(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
         AddProbe(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));

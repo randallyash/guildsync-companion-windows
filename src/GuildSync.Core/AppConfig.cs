@@ -85,7 +85,19 @@ public sealed class ConfigStore
         var root = string.IsNullOrWhiteSpace(xdg)
             ? System.IO.Path.Combine(home, ".config")
             : xdg;
-        return System.IO.Path.Combine(root, "guildsync-companion-windows");
+        var preferred = System.IO.Path.Combine(root, "guildsync-companion");
+        var legacy = System.IO.Path.Combine(root, "guildsync-companion-windows");
+        try
+        {
+            if (!Directory.Exists(preferred) && Directory.Exists(legacy))
+                Directory.Move(legacy, preferred);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            if (Directory.Exists(legacy))
+                return legacy;
+        }
+        return preferred;
     }
 
     public static string DefaultFile()

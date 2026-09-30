@@ -6,13 +6,14 @@ namespace GuildSync.Core;
 public sealed record AppRelease(string Version, string DownloadUrl);
 
 /// <summary>
-/// Picks a newer Windows setup from the Forgejo release list.
-/// Only https links on our Forgejo host, and only the setup exe, are eligible.
+/// Picks a newer setup from the Forgejo release list.
+/// Only https links on our Forgejo host, and only the requested installer name, are eligible.
 /// </summary>
 public static class AppReleases
 {
-    public static AppRelease? Choose(string json, string currentVersion, string forgejoBase)
+    public static AppRelease? Choose(string json, string currentVersion, string forgejoBase, string? assetName = null)
     {
+        assetName ??= AppConstants.WindowsSetupAsset;
         if (!Uri.TryCreate(forgejoBase, UriKind.Absolute, out var forgejo))
             return null;
 
@@ -41,7 +42,7 @@ public static class AppReleases
                     continue;
                 if (best is not null && !VersionOrder.IsNewer(tag, best.Version))
                     continue;
-                var url = SetupUrl(release, forgejo);
+                var url = SetupUrl(release, forgejo, assetName);
                 if (url is null)
                     continue;
                 best = new AppRelease(VersionOrder.Normalize(tag), url);
@@ -50,29 +51,64 @@ public static class AppReleases
         }
     }
 
-    public static bool IsTrustedSetupUrl(string? url, string forgejoBase)
+    /// <summary>Newest release tag, ignoring which installer files it carries.</summary>
+    public static string? Newest(string json, string currentVersion)
     {
-        if (!Uri.TryCreate(forgejoBase, UriKind.Absolute, out var forgejo))
-            return false;
-        return IsTrustedSetupUrl(url, forgejo);
+        JsonDocument doc;
+        try
+        {
+            doc = JsonDocument.Parse(json);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+
+        using (doc)
+        {
+            if (doc.RootElement.ValueKind != JsonValueKind.Array)
+                return null;
+
+            string? best = null;
+            foreach (var release in doc.RootElement.EnumerateArray())
+            {
+                if (Flag(release, "draft") || Flag(release, "prerelease"))
+                    continue;
+                var tag = Text(release, "tag_name");
+                if (!VersionOrder.IsNewer(tag, currentVersion))
+                    continue;
+                if (best is not null && !VersionOrder.IsNewer(tag, best))
+                    continue;
+                best = VersionOrder.Normalize(tag);
+            }
+            return best;
+        }
     }
 
-    private static string? SetupUrl(JsonElement release, Uri forgejo)
+    public static bool IsTrustedSetupUrl(string? url, string forgejoBase, string? assetName = null)
+    {
+        assetName ??= AppConstants.WindowsSetupAsset;
+        if (!Uri.TryCreate(forgejoBase, UriKind.Absolute, out var forgejo))
+            return false;
+        return IsTrustedSetupUrl(url, forgejo, assetName);
+    }
+
+    private static string? SetupUrl(JsonElement release, Uri forgejo, string assetName)
     {
         if (!release.TryGetProperty("assets", out var assets) || assets.ValueKind != JsonValueKind.Array)
             return null;
         foreach (var asset in assets.EnumerateArray())
         {
-            if (!string.Equals(Text(asset, "name"), AppConstants.SetupAssetName, StringComparison.Ordinal))
+            if (!string.Equals(Text(asset, "name"), assetName, StringComparison.Ordinal))
                 continue;
             var url = Text(asset, "browser_download_url");
-            if (IsTrustedSetupUrl(url, forgejo))
+            if (IsTrustedSetupUrl(url, forgejo, assetName))
                 return url;
         }
         return null;
     }
 
-    private static bool IsTrustedSetupUrl(string? url, Uri forgejo)
+    private static bool IsTrustedSetupUrl(string? url, Uri forgejo, string assetName)
     {
         if (!Uri.TryCreate(url, UriKind.Absolute, out var parsed))
             return false;
@@ -83,7 +119,7 @@ public static class AppReleases
         if (!string.IsNullOrEmpty(parsed.UserInfo))
             return false;
         var name = Path.GetFileName(parsed.AbsolutePath);
-        return string.Equals(name, AppConstants.SetupAssetName, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(name, assetName, StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool Flag(JsonElement item, string name)
@@ -170,15 +206,24 @@ public sealed class AppUpdateClient : IDisposable
         if (response.StatusCode != HttpStatusCode.OK)
             return null;
         var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-        return AppReleases.Choose(json, AppConstants.Version, AppConstants.ForgejoBase);
+        return AppReleases.Choose(json, AppConstants.Version, AppConstants.ForgejoBase, AppConstants.SetupAssetName);
+    }
+
+    public async Task<string?> LatestTagAsync(CancellationToken ct = default)
+    {
+        using var response = await _http.GetAsync(AppConstants.AppReleasesUrl, ct).ConfigureAwait(false);
+        if (response.StatusCode != HttpStatusCode.OK)
+            return null;
+        var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        return AppReleases.Newest(json, AppConstants.Version);
     }
 
     public async Task<string?> DownloadInstallerAsync(AppRelease release, string directory, CancellationToken ct = default)
     {
-        if (!AppReleases.IsTrustedSetupUrl(release.DownloadUrl, AppConstants.ForgejoBase))
+        if (!AppReleases.IsTrustedSetupUrl(release.DownloadUrl, AppConstants.ForgejoBase, AppConstants.SetupAssetName))
             return null;
         Directory.CreateDirectory(directory);
-        var dest = Path.Combine(directory, AppConstants.SetupAssetName);
+        var dest = Path.Combine(directory, Path.GetFileName(new Uri(release.DownloadUrl).AbsolutePath));
         using var response = await _http.GetAsync(release.DownloadUrl, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
         if (response.StatusCode != HttpStatusCode.OK)
             return null;

@@ -11,7 +11,7 @@ public sealed class Win32GameProcess : IGameProcess
 {
     public bool IsRunning()
     {
-        if (!OperatingSystem.IsWindows())
+        if (OperatingSystem.IsLinux())
             return LinuxComm();
 
         foreach (var process in Process.GetProcesses())

@@ -53,7 +53,7 @@ public partial class ShellViewModel : ObservableObject
         if (preview == "update")
         {
             UpdatePromptOpen = true;
-            UpdatePromptDetail = "Companion 0.1.6 is ready. GuildSync will close, install, and open again.";
+            UpdatePromptDetail = "Companion 0.1.7 is ready. GuildSync will close, install, and open again.";
         }
         if (preview == "characters")
             LoadCharacterPreview();
@@ -121,7 +121,7 @@ public partial class ShellViewModel : ObservableObject
     public bool PresenceBad => Presence == "bad";
     public char TokenMask => TokenHidden ? '●' : '\0';
     public string TokenToggleLabel => TokenHidden ? "Show" : "Hide";
-    public bool CanUseWindowsStartup => OperatingSystem.IsWindows();
+    public string LoginStartLabel => OperatingSystem.IsWindows() ? "Start with Windows" : "Start when you log in";
 
     public string Disclaimer { get; } =
         "Not affiliated with Blizzard Entertainment. GuildSync does not modify the World of Warcraft client, read its memory, inject code, or play the game. A free addon writes your saved data; this app uploads that file to your guild site.";
@@ -159,7 +159,7 @@ public partial class ShellViewModel : ObservableObject
     {
         if (_preview || _host is null)
             return;
-        WindowsStartup.Apply(_host.Config.StartWithWindows);
+        LoginStartup.Apply(_host.Config.StartWithWindows);
         _host.Start();
         Pull();
         _ = CheckOnLaunchAsync();
@@ -191,8 +191,19 @@ public partial class ShellViewModel : ObservableObject
         try
         {
             using var client = new AppUpdateClient();
+            if (OperatingSystem.IsLinux())
+            {
+                var tag = await client.LatestTagAsync().ConfigureAwait(true);
+                if (string.IsNullOrEmpty(tag) || UpdatePromptOpen)
+                    return;
+                _host.Mention($"Companion {tag} is out. Update it with paru -Syu.");
+                Dialogs?.ShowWindow();
+                Pull();
+                return;
+            }
+
             var release = await client.LatestNewerAsync().ConfigureAwait(true);
-            if (release is null || !OperatingSystem.IsWindows() || UpdatePromptOpen)
+            if (release is null || UpdatePromptOpen)
                 return;
             OfferAppUpdate(release, "");
         }
@@ -248,11 +259,12 @@ public partial class ShellViewModel : ObservableObject
         ScanMessage = "Searching for your World of Warcraft install.";
         InstallError = "";
         var roots = WindowsInstallRoots.Collect();
+        var depth = OperatingSystem.IsWindows() ? 5 : 8;
         var found = await Task.Run(() =>
         {
             var list = InstallFinder.Probe(roots.Probe);
             var seen = new HashSet<string>(list, StringComparer.OrdinalIgnoreCase);
-            foreach (var walked in InstallFinder.FindInstalls(roots.Walk, maxDepth: 5))
+            foreach (var walked in InstallFinder.FindInstalls(roots.Walk, depth))
             {
                 if (seen.Add(walked))
                     list.Add(walked);
@@ -329,7 +341,7 @@ public partial class ShellViewModel : ObservableObject
     {
         Page = "home";
         if (_host is not null)
-            WindowsStartup.Apply(_host.Config.StartWithWindows);
+            LoginStartup.Apply(_host.Config.StartWithWindows);
         Pull();
     }
 
@@ -418,18 +430,22 @@ public partial class ShellViewModel : ObservableObject
         try
         {
             using var client = new AppUpdateClient();
+            if (OperatingSystem.IsLinux())
+            {
+                var tag = await client.LatestTagAsync().ConfigureAwait(true);
+                var line = string.IsNullOrEmpty(tag)
+                    ? $"Companion is up to date ({AppConstants.Version})."
+                    : $"Companion {tag} is out. Update it with paru -Syu.";
+                FinishUpdateCheck(addon, line);
+                return;
+            }
+
             var release = await client.LatestNewerAsync().ConfigureAwait(true);
             if (release is null)
             {
                 FinishUpdateCheck(addon, $"Companion is up to date ({AppConstants.Version}).");
                 return;
             }
-            if (!OperatingSystem.IsWindows())
-            {
-                FinishUpdateCheck(addon, $"Companion {release.Version} is out. Install that setup on Windows.");
-                return;
-            }
-
             OfferAppUpdate(release, addon);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException)
@@ -541,7 +557,7 @@ public partial class ShellViewModel : ObservableObject
         _host.Config.StartWithWindows = StartWithWindows;
         if (!Persist())
             return;
-        WindowsStartup.Apply(StartWithWindows);
+        LoginStartup.Apply(StartWithWindows);
         _host.RefreshWatcher();
         SettingsMessage = "Saved. Checking the token...";
         var check = await CheckTypedToken().ConfigureAwait(true);
