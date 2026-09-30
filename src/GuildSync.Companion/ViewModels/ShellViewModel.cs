@@ -15,7 +15,7 @@ public partial class ShellViewModel : ObservableObject
     private int _toastGen;
     private List<RosterCharacter> _owned = [];
     private string _ownedStatus = "";
-    private int? _previewMainId = 1;
+    private int? _previewMainId = 1560;
 
     public ShellViewModel(CompanionHost host, bool showOnLaunch)
     {
@@ -465,6 +465,13 @@ public partial class ShellViewModel : ObservableObject
     [RelayCommand]
     private void OpenSite() => Dialogs?.OpenUrl(AppConstants.ServerBase);
 
+    private void OpenCharacter(int id)
+    {
+        if (id <= 0)
+            return;
+        Dialogs?.OpenUrl(AppConstants.CharacterPageUrl(id));
+    }
+
     [RelayCommand]
     private void Quit()
     {
@@ -661,9 +668,9 @@ public partial class ShellViewModel : ObservableObject
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         _owned =
         [
-            new RosterCharacter("Aldric Hollowbrook", "Paladin", "Retribution", "Dwarf", 56, 49.7, now - 2 * 86400, Id: 1, Player: "You", Dkp: 42),
-            new RosterCharacter("Balgor Steelclaw", "Mage", "Fire", "Dwarf", 54, 42.9, now - 2 * 86400, Id: 2, Player: "You", Dkp: 0),
-            new RosterCharacter("Rukh Jadefire", "Rogue", "Combat", "Orc", 36, 39.4, now - 3600, Id: 3, Player: "You", Dkp: -3),
+            new RosterCharacter("Aldric Hollowbrook", "Paladin", "Retribution", "Dwarf", 56, 49.7, now - 2 * 86400, Id: 1560, Player: "You", Dkp: 42),
+            new RosterCharacter("Balgor Steelclaw", "Mage", "Fire", "Dwarf", 54, 42.9, now - 2 * 86400, Id: 1559, Player: "You", Dkp: 0),
+            new RosterCharacter("Rukh Jadefire", "Rogue", "Combat", "Orc", 36, 39.4, now - 3600, Id: 1562, Player: "You", Dkp: -3),
         ];
         _ownedStatus = "3 of yours, highest level first. Pin the one you main.";
         ShowOwned();
@@ -699,6 +706,7 @@ public partial class ShellViewModel : ObservableObject
                 Dkp = RosterList.FormatDkp(character.Dkp),
                 Seen = RosterList.Ago(character.LastSeenUnix, now),
                 IsMain = main is int pinned && pinned == id,
+                OpenCommand = new RelayCommand(() => OpenCharacter(id)),
                 PinCommand = new RelayCommand(() => PinCharacter(id)),
                 NameBrush = CharacterRow.BrushFor(character.ClassName),
                 DkpBrush = CharacterRow.DkpColor(character.Dkp),

@@ -184,7 +184,9 @@
                       <Border Classes="card" Padding="16,12" Margin="0,0,0,8">
                         <Grid ColumnDefinitions="*,70,64,64,88,78">
                           <StackPanel Spacing="2">
-                            <TextBlock Text="{Binding Name}" Foreground="{Binding NameBrush}" FontWeight="SemiBold" FontSize="16"/>
+                            <Button Classes="namelink" Command="{Binding OpenCommand}" ToolTip.Tip="Open on twilighttavern.co">
+                              <TextBlock Text="{Binding Name}" Foreground="{Binding NameBrush}" FontWeight="SemiBold" FontSize="16"/>
+                            </Button>
                             <TextBlock Text="{Binding Detail}" Classes="muted" FontSize="13"/>
                           </StackPanel>
                           <TextBlock Grid.Column="1" Text="{Binding Level}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>

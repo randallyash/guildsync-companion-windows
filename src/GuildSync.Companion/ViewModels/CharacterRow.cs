@@ -13,6 +13,7 @@ public sealed class CharacterRow
     public required string Dkp { get; init; }
     public required string Seen { get; init; }
     public required bool IsMain { get; init; }
+    public required ICommand OpenCommand { get; init; }
     public required ICommand PinCommand { get; init; }
     public required IBrush NameBrush { get; init; }
     public required IBrush DkpBrush { get; init; }
