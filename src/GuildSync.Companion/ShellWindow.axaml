@@ -24,7 +24,7 @@
       <Ellipse Width="520" Height="320" HorizontalAlignment="Left" VerticalAlignment="Top"
                Margin="-180,-140,0,0" Fill="#14183064" IsHitTestVisible="False"/>
 
-      <Grid RowDefinitions="52,*">
+      <Grid RowDefinitions="58,*">
         <Grid Grid.Row="0" ColumnDefinitions="300,*" Background="#cc0a0b0e"
               PointerPressed="DragWindow">
           <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="22,0">
@@ -32,13 +32,20 @@
             <TextBlock Text="Twilight Tavern" Foreground="#f0d98c" FontWeight="SemiBold" VerticalAlignment="Center"/>
             <TextBlock Text="GuildSync" Foreground="#9aa1ad" VerticalAlignment="Center"/>
           </StackPanel>
-          <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4" Margin="0,8,8,8">
-            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="0,0,12,0">
+          <!-- Inset from the window edge. The old pair sat 8px off the corner, which read as stuck to the border. -->
+          <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right"
+                      VerticalAlignment="Center" Spacing="8" Margin="0,0,20,0">
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="0,0,14,0">
               <Ellipse Classes="presence" Classes.live="{Binding PresenceLive}" Classes.idle="{Binding PresenceIdle}" Classes.bad="{Binding PresenceBad}"/>
               <TextBlock Text="{Binding GameValue}" Foreground="#9aa1ad" VerticalAlignment="Center"/>
             </StackPanel>
-            <Button Classes="chrome" Content="—" Click="Minimize"/>
-            <Button Classes="chrome close" Content="✕" Click="HideToTray"/>
+            <Button Classes="chrome" Click="Minimize" ToolTip.Tip="Minimize">
+              <!-- A filled bar, not a stroke. A stroke with no height collapses to a dot once it is stretched into the button. -->
+              <Path Classes="bar" Data="M0,0 H12 V2 H0 Z"/>
+            </Button>
+            <Button Classes="chrome close" Click="HideToTray" ToolTip.Tip="Close">
+              <Path Data="M2,2 L10,10 M10,2 L2,10"/>
+            </Button>
           </StackPanel>
         </Grid>
 

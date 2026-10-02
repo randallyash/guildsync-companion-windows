@@ -156,22 +156,52 @@
   </Style>
 
   <Style Selector="Button.chrome">
-    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Background" Value="#14ffffff"/>
     <Setter Property="Foreground" Value="#9aa1ad"/>
-    <Setter Property="Width" Value="46"/>
-    <Setter Property="Height" Value="36"/>
+    <Setter Property="BorderBrush" Value="#22ffffff"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="Width" Value="34"/>
+    <Setter Property="Height" Value="34"/>
+    <Setter Property="MinWidth" Value="34"/>
+    <Setter Property="MinHeight" Value="34"/>
     <Setter Property="Padding" Value="0"/>
-    <Setter Property="CornerRadius" Value="8"/>
-    <Setter Property="FontSize" Value="14"/>
-    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="CornerRadius" Value="10"/>
+    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+  </Style>
+  <Style Selector="Button.chrome Path">
+    <Setter Property="Stroke" Value="#c5cad3"/>
+    <Setter Property="StrokeThickness" Value="1.6"/>
+    <Setter Property="StrokeLineCap" Value="Round"/>
+    <Setter Property="StrokeJoin" Value="Round"/>
+    <Setter Property="Width" Value="12"/>
+    <Setter Property="Height" Value="12"/>
+    <Setter Property="Stretch" Value="Uniform"/>
+  </Style>
+  <!-- Wider than it is tall, and filled, so the minimize mark stays a bar. -->
+  <Style Selector="Button.chrome Path.bar">
+    <Setter Property="Fill" Value="#c5cad3"/>
+    <Setter Property="StrokeThickness" Value="0"/>
+    <Setter Property="Width" Value="12"/>
+    <Setter Property="Height" Value="2"/>
+    <Setter Property="Stretch" Value="Fill"/>
   </Style>
   <Style Selector="Button.chrome:pointerover">
-    <Setter Property="Background" Value="#14ffffff"/>
-    <Setter Property="Foreground" Value="#e8eaf0"/>
+    <Setter Property="Background" Value="#24ffffff"/>
+    <Setter Property="BorderBrush" Value="#33ffffff"/>
+  </Style>
+  <Style Selector="Button.chrome:pointerover Path">
+    <Setter Property="Stroke" Value="#f4f1e6"/>
+  </Style>
+  <Style Selector="Button.chrome:pointerover Path.bar">
+    <Setter Property="Fill" Value="#f4f1e6"/>
   </Style>
   <Style Selector="Button.chrome.close:pointerover">
     <Setter Property="Background" Value="#ff7b72"/>
-    <Setter Property="Foreground" Value="#1a0b0b"/>
+    <Setter Property="BorderBrush" Value="#ff7b72"/>
+  </Style>
+  <Style Selector="Button.chrome.close:pointerover Path">
+    <Setter Property="Stroke" Value="#1a0b0b"/>
   </Style>
 
   <Style Selector="TextBox">
