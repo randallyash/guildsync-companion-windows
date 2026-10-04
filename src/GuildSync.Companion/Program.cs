@@ -13,6 +13,9 @@ public static class Program
     public static void Main(string[] args)
     {
         Args = args;
+        // A crash should at least leave a trace journald can pick up.
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+            Console.Error.WriteLine($"Unhandled exception: {e.ExceptionObject}");
         AppConstants.ServerBase = AppConstants.ResolveServerBase();
 
         if (args.Contains("--version") || args.Contains("-v"))

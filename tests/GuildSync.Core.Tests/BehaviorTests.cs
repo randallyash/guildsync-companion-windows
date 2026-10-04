@@ -134,6 +134,32 @@ public class BehaviorTests
     }
 
     [Fact]
+    public void Walk_skips_symlinks_and_unreadable_dirs()
+    {
+        var root = Temp();
+        var games = Path.Combine(root, "Games");
+        var client = Path.Combine(games, "wow", AppConstants.ClientSubdir);
+        Directory.CreateDirectory(Path.Combine(client, "Interface"));
+        Directory.CreateDirectory(Path.Combine(client, "WTF"));
+        File.WriteAllBytes(Path.Combine(client, "Wow.exe"), []);
+
+        // Wine prefix layout: dosdevices/z: is a symlink at the filesystem root.
+        var dosdevices = Path.Combine(games, "battlenet", "pfx", "pfx", "dosdevices");
+        Directory.CreateDirectory(dosdevices);
+        Directory.CreateSymbolicLink(Path.Combine(dosdevices, "z:"), root);
+
+        var locked = Path.Combine(games, "locked");
+        Directory.CreateDirectory(locked);
+        if (!OperatingSystem.IsWindows())
+            File.SetUnixFileMode(locked, UnixFileMode.None);
+
+        var found = InstallFinder.FindInstalls([games], maxDepth: 8);
+        Assert.Contains(client, found);
+        Assert.DoesNotContain(found, p => p.Contains("dosdevices", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(found, p => p.Contains("locked", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void Probe_checks_program_files_layout_without_a_deep_walk()
     {
         var root = Temp();

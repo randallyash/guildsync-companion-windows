@@ -260,17 +260,30 @@ public partial class ShellViewModel : ObservableObject
         InstallError = "";
         var roots = WindowsInstallRoots.Collect();
         var depth = OperatingSystem.IsWindows() ? 5 : 8;
-        var found = await Task.Run(() =>
+        List<string> found;
+        try
         {
-            var list = InstallFinder.Probe(roots.Probe);
-            var seen = new HashSet<string>(list, StringComparer.OrdinalIgnoreCase);
-            foreach (var walked in InstallFinder.FindInstalls(roots.Walk, depth))
+            found = await Task.Run(() =>
             {
-                if (seen.Add(walked))
-                    list.Add(walked);
-            }
-            return list;
-        }).ConfigureAwait(true);
+                var list = InstallFinder.Probe(roots.Probe);
+                var seen = new HashSet<string>(list, StringComparer.OrdinalIgnoreCase);
+                foreach (var walked in InstallFinder.FindInstalls(roots.Walk, depth))
+                {
+                    if (seen.Add(walked))
+                        list.Add(walked);
+                }
+                return list;
+            }).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            Scanning = false;
+            ScanMessage = OperatingSystem.IsMacOS()
+                ? "The search failed. Browse to your World of Warcraft folder."
+                : "The search failed. Browse to the folder that contains Wow.exe.";
+            InstallError = $"The search failed: {ex.Message}";
+            return;
+        }
 
         FoundInstalls.Clear();
         foreach (var path in found)

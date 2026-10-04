@@ -131,10 +131,10 @@ public static class InstallFinder
                     continue;
                 }
 
-                IEnumerable<string> children;
+                List<DirectoryInfo> children;
                 try
                 {
-                    children = Directory.EnumerateDirectories(dir);
+                    children = new DirectoryInfo(dir).EnumerateDirectories().ToList();
                 }
                 catch (IOException)
                 {
@@ -147,9 +147,14 @@ public static class InstallFinder
 
                 foreach (var child in children)
                 {
-                    if (Pruned.Contains(Path.GetFileName(child)))
+                    // Wine prefixes link dosdevices/z: at the filesystem root.
+                    // Following it walks /proc and /mnt and dies on the first
+                    // unreadable entry, so the search stays inside real dirs.
+                    if (child.LinkTarget is not null)
                         continue;
-                    pending.Push((child, depth + 1));
+                    if (Pruned.Contains(child.Name))
+                        continue;
+                    pending.Push((child.FullName, depth + 1));
                 }
             }
         }
