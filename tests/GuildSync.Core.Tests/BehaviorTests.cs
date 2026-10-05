@@ -431,6 +431,37 @@ public class BehaviorTests
     }
 
     [Fact]
+    public async Task SetMainCharacter_sends_the_id_and_parses_the_accepted_main()
+    {
+        int? received = null;
+        var handler = new ScriptedHandler(request =>
+        {
+            Assert.Equal(HttpMethod.Post, request.Method);
+            Assert.EndsWith("/api/v1/ingest/main-character", request.RequestUri!.AbsolutePath);
+            Assert.Equal("tok", request.Headers.GetValues("X-Upload-Token").Single());
+            received = System.Text.Json.JsonDocument
+                .Parse(request.Content!.ReadAsStringAsync().Result)
+                .RootElement.GetProperty("character_id").GetInt32();
+            return Json(HttpStatusCode.OK, """{"main_character_id": 42}""");
+        });
+        using var client = new IngestClient(handler);
+        var (mainId, error) = await client.SetMainCharacterAsync("tok", 42);
+        Assert.Equal(42, received);
+        Assert.Equal(42, mainId);
+        Assert.Equal("", error);
+    }
+
+    [Fact]
+    public async Task SetMainCharacter_surfaces_rejections()
+    {
+        using var client = new IngestClient(new ScriptedHandler(_ =>
+            Json(HttpStatusCode.Forbidden, """{"detail": "not your character"}""")));
+        var (mainId, error) = await client.SetMainCharacterAsync("tok", 99);
+        Assert.Null(mainId);
+        Assert.Equal("token rejected", error);
+    }
+
+    [Fact]
     public void Roster_sorts_highest_level_first_and_joins_the_name()
     {
         const string json = """

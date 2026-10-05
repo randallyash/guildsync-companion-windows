@@ -15,7 +15,8 @@ public sealed record RosterCharacter(
     long LastSeenUnix,
     int Id = 0,
     string Player = "",
-    int? Dkp = null);
+    int? Dkp = null,
+    bool IsMain = false);
 
 public static class RosterList
 {
@@ -40,7 +41,9 @@ public static class RosterList
                 Double(item, "ilvl"),
                 Long(item, "last_seen"),
                 Number(item, "id"),
-                Text(item, "player")));
+                Text(item, "player"),
+                null,
+                Bool(item, "main")));
         }
 
         found.Sort(static (a, b) =>
@@ -139,6 +142,11 @@ public static class RosterList
         if (!item.TryGetProperty(name, out var value) || value.ValueKind != JsonValueKind.Number)
             return 0;
         return value.TryGetInt64(out var whole) ? whole : (long)value.GetDouble();
+    }
+
+    private static bool Bool(JsonElement item, string name)
+    {
+        return item.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.True;
     }
 }
 

@@ -8,7 +8,7 @@ namespace GuildSync.Core;
 /// </summary>
 public static class AppConstants
 {
-    public const string Version = "0.1.8";
+    public const string Version = "0.1.9";
     public const string AppName = "GuildSync Companion";
 
     /// <summary>Same name on Windows, Linux, and Mac. The server only checks the upload token.</summary>
@@ -59,6 +59,7 @@ public static class AppConstants
     public static string ServerBase { get; set; } = ResolveServerBase();
 
     public static string IngestUrl => ServerBase + "/api/v1/ingest";
+    public static string MainCharacterUrl => ServerBase + "/api/v1/ingest/main-character";
     public static string MeUrl => ServerBase + "/api/v1/me";
     public static string RosterUrl => ServerBase + "/api/v1/roster";
     public static string UploadPageUrl => ServerBase + "/upload";

@@ -732,7 +732,7 @@ public partial class ShellViewModel : ObservableObject
         }
     }
 
-    private void PinCharacter(int id)
+    private async Task PinCharacterAsync(int id)
     {
         if (id <= 0)
             return;
@@ -744,10 +744,31 @@ public partial class ShellViewModel : ObservableObject
             return;
         }
 
-        _host.Config.MainCharacterId = _host.Config.MainCharacterId == id ? null : id;
+        // Server is the source of truth: pinning writes users.main_character_id
+        // (the same field the website edits), so app and site stay in sync.
+        // Tapping the current main unpins it.
+        var desired = _host.Config.MainCharacterId == id ? 0 : id;
+        CharactersStatus = desired == 0 ? "Clearing your main..." : "Setting your main...";
+        int? accepted;
+        string error;
+        using (var client = new IngestClient())
+        {
+            (accepted, error) = await client.SetMainCharacterAsync(
+                _host.Config.Token, desired).ConfigureAwait(true);
+        }
+        if (accepted is null)
+        {
+            CharactersStatus = "Couldn't set your main" +
+                (error.Length > 0 ? ": " + error : ".") + " Try again in a bit.";
+            ShowOwned();
+            return;
+        }
+
+        _host.Config.MainCharacterId = accepted;
         if (!Persist())
         {
-            CharactersStatus = "Couldn't save which character you main.";
+            CharactersStatus = "Main saved on the site; couldn't save it locally.";
+            ShowOwned();
             return;
         }
         ShowOwned();
@@ -828,6 +849,14 @@ public partial class ShellViewModel : ObservableObject
             _ownedStatus = mine.Count == 1
                 ? "1 of yours. Pin it if this is the character you main."
                 : $"{mine.Count} of yours, highest level first. Pin the one you main.";
+            // The site is the source of truth for the main (it can be changed
+            // from /profile too): adopt the server's pick when they differ.
+            var serverMain = _owned.FirstOrDefault(row => row.IsMain);
+            if (serverMain is not null && _host.Config.MainCharacterId != serverMain.Id)
+            {
+                _host.Config.MainCharacterId = serverMain.Id;
+                Persist();
+            }
             ShowOwned();
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException)
@@ -908,7 +937,7 @@ public partial class ShellViewModel : ObservableObject
                 Seen = RosterList.Ago(character.LastSeenUnix, now),
                 IsMain = main is int pinned && pinned == id,
                 OpenCommand = new RelayCommand(() => OpenCharacter(id)),
-                PinCommand = new RelayCommand(() => PinCharacter(id)),
+                PinCommand = new RelayCommand(() => _ = PinCharacterAsync(id)),
                 NameBrush = CharacterRow.BrushFor(character.ClassName),
                 DkpBrush = CharacterRow.DkpColor(character.Dkp),
             });

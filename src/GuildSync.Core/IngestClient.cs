@@ -31,9 +31,50 @@ public sealed class IngestClient : IDisposable
             _http.DefaultRequestHeaders.UserAgent.ParseAdd(AppConstants.UserAgent);
     }
 
-    public async Task<TokenCheck> CheckTokenAsync(string token, CancellationToken ct = default)
+    /// <summary>
+    /// Set (or clear, id 0) the account's main character on the server.
+    /// Returns the main id the server accepted, or null on failure with a
+    /// short reason. The server is the source of truth; callers mirror it.
+    /// </summary>
+    public async Task<(int? MainId, string Error)> SetMainCharacterAsync(
+        string token, int characterId, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(token))
+            return (null, "no upload token");
+        var body = JsonSerializer.SerializeToUtf8Bytes(new { character_id = characterId });
+        var (status, resp) = await SendAsync(
+            AppConstants.MainCharacterUrl, token, body, "application/json", ct
+        ).ConfigureAwait(false);
+        if (status is 200 or 201)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(resp);
+                if (doc.RootElement.TryGetProperty("main_character_id", out var main))
+                {
+                    return (main.ValueKind == JsonValueKind.Number
+                        ? main.GetInt32()
+                        : null, "");
+                }
+                return (null, "");
+            }
+            catch (JsonException)
+            {
+                return (characterId == 0 ? null : characterId, "");
+            }
+        }
+        var detail = status switch
+        {
+            401 or 403 => "token rejected",
+            404 => "unknown character",
+            422 => "bad request",
+            _ => status == 0 ? Encoding.UTF8.GetString(resp) : $"server error {status}",
+        };
+        return (null, detail);
+    }
+
+    public async Task<TokenCheck> CheckTokenAsync(string token, CancellationToken ct = default)
+    {        if (string.IsNullOrWhiteSpace(token))
             return new TokenCheck("invalid", "", "no token");
 
         var (status, body) = await SendAsync(AppConstants.MeUrl, token, null, null, ct).ConfigureAwait(false);
