@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>GuildSync.Companion</RootNamespace>
     <AssemblyName>GuildSyncCompanion</AssemblyName>
-    <Version>0.1.7</Version>
+    <Version>0.1.8</Version>
     <Product>GuildSync Companion</Product>
     <Company>Twilight Tavern</Company>
     <Description>Uploads GuildSync saved data to twilighttavern.co. Does not modify the World of Warcraft client.</Description>

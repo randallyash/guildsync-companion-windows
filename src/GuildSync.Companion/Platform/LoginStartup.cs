@@ -46,6 +46,12 @@ public static class LoginStartup
             var exe = Environment.ProcessPath;
             if (string.IsNullOrWhiteSpace(exe))
                 return;
+            // Under flatpak the process path lives inside the sandbox and is
+            // meaningless on the host; the autostart entry has to launch the
+            // app through flatpak instead.
+            var exec = InstallKind.IsFlatpak
+                ? "flatpak run co.twilighttavern.Companion"
+                : $"\"{exe}\"";
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             var desktop = string.Join('\n',
             [
@@ -53,7 +59,7 @@ public static class LoginStartup
                 "Type=Application",
                 "Name=GuildSync Companion",
                 "Comment=Uploads GuildSync saved data to twilighttavern.co",
-                $"Exec=\"{exe}\"",
+                $"Exec={exec}",
                 "Icon=guildsync-companion",
                 "Terminal=false",
                 "Categories=Game;",

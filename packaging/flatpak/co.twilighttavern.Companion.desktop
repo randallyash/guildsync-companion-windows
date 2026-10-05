@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=GuildSync Companion
+Comment=Uploads GuildSync saved data to twilighttavern.co
+Exec=GuildSyncCompanion
+Icon=co.twilighttavern.Companion
+Terminal=false
+Categories=Game;
+StartupWMClass=GuildSyncCompanion
+X-Flatpak-Tags=autostart;

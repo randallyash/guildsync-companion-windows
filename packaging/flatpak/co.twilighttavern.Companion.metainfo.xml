@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>co.twilighttavern.Companion</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>GuildSync Companion</name>
+  <summary>Uploads GuildSync saved data to twilighttavern.co</summary>
+  <description>
+    <p>
+      GuildSync Companion runs in your system tray and uploads your World of
+      Warcraft: Forever character data to twilighttavern.co for you. It also
+      keeps the GuildSync addon up to date inside your client.
+    </p>
+    <p>
+      It never modifies the game client itself: it reads the SavedVariables
+      file the addon writes and POSTs it to the guild site on a schedule.
+    </p>
+  </description>
+  <launchable type="desktop-id">co.twilighttavern.Companion.desktop</launchable>
+  <url type="homepage">https://twilighttavern.co</url>
+  <developer_name>Twilight Tavern</developer_name>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="0.1.8" date="2026-10-04">
+      <description>
+        <p>First flatpak packaging.</p>
+      </description>
+    </release>
+  </releases>
+  <provides>
+    <binary>guildsync-companion</binary>
+  </provides>
+</component>

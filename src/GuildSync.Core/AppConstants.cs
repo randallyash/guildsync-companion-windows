@@ -8,7 +8,7 @@ namespace GuildSync.Core;
 /// </summary>
 public static class AppConstants
 {
-    public const string Version = "0.1.7";
+    public const string Version = "0.1.8";
     public const string AppName = "GuildSync Companion";
 
     /// <summary>Same name on Windows, Linux, and Mac. The server only checks the upload token.</summary>

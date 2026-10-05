@@ -450,9 +450,32 @@ public partial class ShellViewModel : ObservableObject
             if (OperatingSystem.IsLinux())
             {
                 var tag = await client.LatestTagAsync().ConfigureAwait(true);
-                var line = string.IsNullOrEmpty(tag)
-                    ? $"Companion is up to date ({AppConstants.Version})."
-                    : $"Companion {tag} is out. Update it with paru -Syu.";
+                string line;
+                if (string.IsNullOrEmpty(tag))
+                {
+                    line = $"Companion is up to date ({AppConstants.Version}).";
+                }
+                else if (InstallKind.IsFlatpak)
+                {
+                    line = $"Companion {tag} is out. Updates arrive through your "
+                        + "system's software updater (flatpak update).";
+                }
+                else if (InstallKind.IsSystemPackage)
+                {
+                    line = $"Companion {tag} is out. Update it with paru -Syu.";
+                }
+                else
+                {
+                    // Portable install: offer the in-app updater like other OSes.
+                    var newer = await client.LatestNewerAsync().ConfigureAwait(true);
+                    if (newer is null)
+                    {
+                        FinishUpdateCheck(addon, $"Companion is up to date ({AppConstants.Version}).");
+                        return;
+                    }
+                    OfferAppUpdate(newer, addon);
+                    return;
+                }
                 FinishUpdateCheck(addon, line);
                 return;
             }
